@@ -1,16 +1,37 @@
-import logging
-from ctypes import c_bool
-from math import sqrt
-from multiprocessing import Process, Manager, Pool
+"""modeler.py:
 
+    The modeler.py file defines  classes:
+    ModelPoint, Triangle, Vector, and Modeler
+
+    ModelPoint represents a 3D point with x, y, and z coordinates, providing methods to check if the point
+        is on the floor and get a copy of the point on the floor.
+
+    Triangle represents a triangle defined by three ModelPoint objects, with a method to calculate and return
+        the normal vector of the triangle.
+
+    Vector represents a 3D vector with x, y, and z components, providing methods to calculate the magnitude,
+        normalize the vector, and perform cross product calculations.
+
+    Modeler is a class that manages the model creation process, including loading model grid data, creating triangles,
+        and exporting the model to an STL file.
+
+    __author__      = "Unintelligible Maker"
+    __copyright__   = "Copyright 2024"
+    __license__     = "GNU GPL v3"
+    __version__     = "1.0"
+    __maintainer__  = "Unintelligible Maker"
+    __email__       = "maker@unintelligiblemaker.com"
+"""
+
+
+import logging
+from math import sqrt
+from multiprocessing import Pool
 from numpy import array as nparray
 from stl.mesh import Mesh
 
 
 class ModelPoint(object):
-    '''
-    
-    '''
     def __init__(self, x: float, y: float, z: float):
         self.x = x
         self.y = y
@@ -27,6 +48,7 @@ class ModelPoint(object):
 
 
 class Triangle(object):
+
     def __init__(self, a: ModelPoint, b: ModelPoint, c: ModelPoint):
         self.a = a
         self.b = b
@@ -96,6 +118,15 @@ class Vector(object):
 
 class Modeler(object):
     def __init__(self, size_x, size_y, steps_x, steps_y, model_points):
+        """
+        :param size_x: The size of the model along the x-axis (unitless but usually mm for 3d printing)
+        :param size_y: The size of the model along the y-axis (unitless but usually mm for 3d printing)
+        :param steps_x: The number of steps along the x-axis 
+        :param steps_y: The number of steps along the y-axis
+        :param model_points: A list of lists of ModelPoint objects representing the model grid points
+            so model_points[y_step][x_step] is the point at the given x_step and y_step steps from the
+            origin.  The ModelPoint contained there has the x,y,z model info in unitless distance 
+        """""
         self.model_points = model_points
 
         self.triangles = None
@@ -113,26 +144,53 @@ class Modeler(object):
         logging.debug(f"y_step_size: {self.y_step_size}")
 
     def get_model_x_y_for_steps(self, x_step, y_step):
+        """
+        :param x_step: The step along the x-axis
+        :param y_step: The step along the y-axis
+        :return: The x and y coordinates of the point at the given step along the x and y axes
+        """
         x = round((x_step * self.x_step_size), 3)
         y = round((y_step * self.y_step_size), 3)
         return x, y
 
     @staticmethod
     def get_model_x_y_for_steps(size_x, size_y, x_step, y_step, steps_x, steps_y):
+        """
+        :param size_x: The size of the model along the x-axis
+        :param size_y: The size of the model along the y-axis
+        :param x_step: The step along the x-axis
+        :param y_step: The step along the y-axis
+        :param steps_x: The number of steps along the x-axis
+        :param steps_y: The number of steps along the y-axis
+        :return: The x and y coordinates of the point at the given step along the x and y axes
+        """
         x = round((x_step * size_x / steps_x), 3)
         y = round((y_step * size_y / steps_y), 3)
         return x, y
+
     def generate_triangles(self, max_processes=1):
+        """
+        :param max_processes: The maximum number of processes to use for triangle generation
+        :return: None
+        """
         with Pool(max_processes) as p:
             self.triangles = p.map(self._generate_triangles_for_, range(-1, self.steps_x))
 
 
     def save_stl(self, filename):
+        """
+        :param filename: The filename to save the STL file to
+        :return: None
+        """
         if self.mesh is None:
             self.generate_mesh()
         self.mesh.save(filename)
 
     def _generate_triangles_for_(self, index):
+        """
+        :param index: The index of the strip along the x-axis
+        :return: A list of Triangle objects representing the triangles for the strip
+        """
         if index == -1:
             triangles = self._generate_triangles_for_front_and_rear()
             triangles.extend(self._generate_triangles_for_left_and_rright())
@@ -141,6 +199,16 @@ class Modeler(object):
             return self._generate_triangles_for_top_and_bottom_strip_x(index)
 
     def _generate_triangles_for_top_and_bottom_strip_x(self, x_step):
+        """
+        This method generates the triangles for a single strip of the model along the x-axis.
+        It creates two triangles for each square in the top strip and two triangles for each
+        square in the bottom strip. This is done so that if there are spots where the top and
+        bottom strips meet, the triangles can be removed to make a "hole" in the model.  Think
+        about an island up out of the ocean....you want the ocean to be a hole around the island.
+
+        :param x_step: The index of the strip along the x-axis.
+        :return: A list of Triangle objects representing the triangles for the strip.
+        """
         logging.debug(f"Starting Triangles for x_step: {x_step}")
         triangles = []
         for y_step in range(0, self.steps_y):
@@ -197,9 +265,6 @@ class Modeler(object):
             cos_theta_b = Vector.dot_product(normal_vector_b_1, normal_vector_b_2)
             logging.debug(f"cos_theta_b = {cos_theta_b}")
 
-            ## TODO: Is the abs right?  WIth the bug on triangle direction (in vs out) fixed I think
-            ## The abs is not wrong and we want the less without it, but I'm not sure.  I need to run
-            ## The tests agin here and see what looks better across them
             if abs(cos_theta_a) < abs(cos_theta_b):
                 if not triangle_a_1.is_on_floor():
                     triangles.append(triangle_a_1)
@@ -219,6 +284,9 @@ class Modeler(object):
         return triangles
 
     def _generate_triangles_for_front_and_rear(self):
+        """
+        :return: A list of Triangle objects representing the triangles for the front and rear of the model.
+        """
         logging.debug(f"Adding Front and Rear Triangles.")
         triangles = []
         for x_step in range(0, self.steps_x):
@@ -252,6 +320,9 @@ class Modeler(object):
         return triangles
 
     def _generate_triangles_for_left_and_rright(self):
+        """
+        :return: A list of Triangle objects representing the triangles for the left and right of the model.
+        """
         logging.debug(f"Adding Front and Rear Triangles.")
         triangles = []
         for y_step in range(0, self.steps_y):
@@ -285,6 +356,10 @@ class Modeler(object):
         return triangles
 
     def generate_faces(self, max_processes=1):
+        """
+        :param max_processes: The maximum number of processes to use for face generation
+        :return: None
+        """
         logging.info(f"Generating faces")
         with Pool(max_processes) as p:
             faces_groups = p.map(self._generate_faces, self.triangles)
@@ -294,11 +369,19 @@ class Modeler(object):
 
 
     def _generate_faces(self, triangles):
+        """
+        :param triangles: A list of Triangle objects
+        :return: A list of Face objects representing the faces of the triangles
+        """
         faces = []
         for triangle in triangles:
             faces.append(triangle.get_face())
         return faces
+
     def generate_mesh(self):
+        """
+        :return: None
+        """
         if len(self.faces) == 0:
             self.generate_faces()
         logging.info(f"Meshing.")
