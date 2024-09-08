@@ -17,17 +17,18 @@
 
     __author__      = "Unintelligible Maker"
     __copyright__   = "Copyright 2024"
-    __license__     = "GNU GPL v3"
+    __license__     = "MIT License"
     __version__     = "1.0"
     __maintainer__  = "Unintelligible Maker"
     __email__       = "maker@unintelligiblemaker.com"
+    __project__     = "PyTerrainModeler"
 """
-
 
 import logging
 from math import sqrt
 from multiprocessing import Pool
 from numpy import array as nparray
+from numpy.random import normal
 from stl.mesh import Mesh
 
 
@@ -73,14 +74,15 @@ class Triangle(object):
         return self.a.is_on_floor() and self.b.is_on_floor() and self.c.is_on_floor()
 
     def get_face(self):
-        return ([0, 0, 0],
+        normal_vector = self.get_normal()
+        return ([normal_vector.x, normal_vector.y, normal_vector.z],
                 [[self.a.x, self.a.y, self.a.z],
                  [self.b.x, self.b.y, self.b.z],
                  [self.c.x, self.c.y, self.c.z]],
-                [0])
+                [0.0])
 
     def get_floor_copy(self):
-        return Triangle(self.a.get_floor_copy(), self.b.get_floor_copy(), self.c.get_floor_copy())
+        return Triangle(self.a.get_floor_copy(), self.c.get_floor_copy(), self.b.get_floor_copy())
 
 
 class Vector(object):
@@ -176,7 +178,6 @@ class Modeler(object):
         with Pool(max_processes) as p:
             self.triangles = p.map(self._generate_triangles_for_, range(-1, self.steps_x))
 
-
     def save_stl(self, filename):
         """
         :param filename: The filename to save the STL file to
@@ -193,7 +194,7 @@ class Modeler(object):
         """
         if index == -1:
             triangles = self._generate_triangles_for_front_and_rear()
-            triangles.extend(self._generate_triangles_for_left_and_rright())
+            triangles.extend(self._generate_triangles_for_left_and_right())
             return triangles
         else:
             return self._generate_triangles_for_top_and_bottom_strip_x(index)
@@ -279,7 +280,6 @@ class Modeler(object):
                 if not triangle_b_2.is_on_floor():
                     triangles.append(triangle_b_2)
                     triangles.append(triangle_b_2.get_floor_copy())
-        # triangles.extend(triangel_cache)
         logging.debug(f"Ending Triangles for x_step: {x_step}")
         return triangles
 
@@ -292,34 +292,34 @@ class Modeler(object):
         for x_step in range(0, self.steps_x):
             if not self.model_points[x_step][0].z == 0:
                 triangle_front_1 = Triangle(self.model_points[x_step][0].get_floor_copy(),
-                                        self.model_points[x_step][0],
-                                        self.model_points[x_step + 1][0].get_floor_copy())
+                                            self.model_points[x_step][0],
+                                            self.model_points[x_step + 1][0].get_floor_copy())
                 logging.debug(f"triangle_front_1: {triangle_front_1}")
                 triangles.append(triangle_front_1)
 
             if not self.model_points[x_step + 1][0].z == 0:
                 triangle_front_2 = Triangle(self.model_points[x_step][0],
-                                        self.model_points[x_step + 1][0],
-                                        self.model_points[x_step + 1][0].get_floor_copy())
+                                            self.model_points[x_step + 1][0],
+                                            self.model_points[x_step + 1][0].get_floor_copy())
                 logging.debug(f"triangle_front_2: {triangle_front_2}")
                 triangles.append(triangle_front_2)
 
             if not self.model_points[x_step][self.steps_y].z == 0:
                 triangle_rear_1 = Triangle(self.model_points[x_step][self.steps_y],
-                                        self.model_points[x_step][self.steps_y].get_floor_copy(),
-                                        self.model_points[x_step + 1][self.steps_y].get_floor_copy())
+                                           self.model_points[x_step][self.steps_y].get_floor_copy(),
+                                           self.model_points[x_step + 1][self.steps_y].get_floor_copy())
                 logging.debug(f"triangle_rear_1: {triangle_rear_1}")
                 triangles.append(triangle_rear_1)
 
             if not self.model_points[x_step + 1][self.steps_y].z == 0:
                 triangle_rear_2 = Triangle(self.model_points[x_step][self.steps_y],
-                                            self.model_points[x_step + 1][self.steps_y].get_floor_copy(),
-                                            self.model_points[x_step + 1][self.steps_y])
+                                           self.model_points[x_step + 1][self.steps_y].get_floor_copy(),
+                                           self.model_points[x_step + 1][self.steps_y])
                 logging.debug(f"triangle_front_2: {triangle_rear_2}")
                 triangles.append(triangle_rear_2)
         return triangles
 
-    def _generate_triangles_for_left_and_rright(self):
+    def _generate_triangles_for_left_and_right(self):
         """
         :return: A list of Triangle objects representing the triangles for the left and right of the model.
         """
@@ -328,29 +328,29 @@ class Modeler(object):
         for y_step in range(0, self.steps_y):
             if not self.model_points[self.steps_x][y_step].z == 0:
                 triangle_right_1 = Triangle(self.model_points[self.steps_x][y_step].get_floor_copy(),
-                                        self.model_points[self.steps_x][y_step],
-                                        self.model_points[self.steps_x][y_step + 1].get_floor_copy())
+                                            self.model_points[self.steps_x][y_step],
+                                            self.model_points[self.steps_x][y_step + 1].get_floor_copy())
                 logging.debug(f"triangle_right_1: {triangle_right_1}")
                 triangles.append(triangle_right_1)
 
             if not self.model_points[self.steps_x][y_step + 1].z == 0:
                 triangle_right_2 = Triangle(self.model_points[self.steps_x][y_step],
-                                        self.model_points[self.steps_x][y_step + 1],
-                                        self.model_points[self.steps_x][y_step + 1].get_floor_copy())
+                                            self.model_points[self.steps_x][y_step + 1],
+                                            self.model_points[self.steps_x][y_step + 1].get_floor_copy())
                 logging.debug(f"triangle_front_2: {triangle_right_2}")
                 triangles.append(triangle_right_2)
 
             if not self.model_points[0][y_step].z == 0:
                 triangle_left_1 = Triangle(self.model_points[0][y_step],
-                                        self.model_points[0][y_step].get_floor_copy(),
-                                        self.model_points[0][y_step + 1].get_floor_copy())
+                                           self.model_points[0][y_step].get_floor_copy(),
+                                           self.model_points[0][y_step + 1].get_floor_copy())
                 logging.debug(f"triangle_rear_1: {triangle_left_1}")
                 triangles.append(triangle_left_1)
 
             if not self.model_points[0][y_step].z == 0:
                 triangle_left_2 = Triangle(self.model_points[0][y_step],
-                                            self.model_points[0][y_step + 1].get_floor_copy(),
-                                            self.model_points[0][y_step + 1])
+                                           self.model_points[0][y_step + 1].get_floor_copy(),
+                                           self.model_points[0][y_step + 1])
                 logging.debug(f"triangle_front_2: {triangle_left_2}")
                 triangles.append(triangle_left_2)
         return triangles
@@ -367,7 +367,6 @@ class Modeler(object):
         for faces in faces_groups:
             self.faces.extend(faces)
 
-
     def _generate_faces(self, triangles):
         """
         :param triangles: A list of Triangle objects
@@ -375,7 +374,9 @@ class Modeler(object):
         """
         faces = []
         for triangle in triangles:
-            faces.append(triangle.get_face())
+            face = triangle.get_face()
+            if face is not None:
+                faces.append(face)
         return faces
 
     def generate_mesh(self):

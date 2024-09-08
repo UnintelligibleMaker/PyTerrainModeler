@@ -5,15 +5,11 @@ This is the terrain model builder.  It builds models of real words terrain in th
 import logging
 import os
 import math
-from multiprocessing import cpu_count
 from geopy import Point, distance
 from enum import Enum
 from .elevation_manager import ElevationManager
 from .modeler import Modeler, ModelPoint
-from random import choice
-from numpy import array as nparray
-from stl.mesh import Mesh
-from multiprocessing import Process, Manager, cpu_count, Pool, set_start_method, Queue, Pool
+from multiprocessing import Manager, Pool
 
 
 class FlattenMode(Enum):
@@ -45,7 +41,7 @@ class TerrainModler:
                  geotiff_folder=None,
                  xyz_config=None,
                  max_processes=(os.cpu_count() * 2)):
-        '''
+        """
             This is the terrain model builder.  It builds models of real words terrain in the stl format
 
         :param latitude: latitude of the South West of the map
@@ -68,16 +64,15 @@ class TerrainModler:
                  surface elevation: [file, file, file, ... ]
                  ...}
         :param max_processes: max processes The maxiumim number of processes to have running at a time.
-        '''
-        self.longitude_delta =  longitude_size / steps_x
+        """
+        self.longitude_delta = longitude_size / steps_x
         logging.debug(f"{longitude_size}/{steps_x} = {self.longitude_delta}")
 
-        self.longitude_delta =  longitude_size / steps_x
+        self.longitude_delta = longitude_size / steps_x
         logging.debug(f"{longitude_size}/{steps_x} = {self.longitude_delta}")
 
-        order_of_magnitude = -4 # math.floor(math.log(longitude_delta, 10))
+        order_of_magnitude = -4  # math.floor(math.log(longitude_delta, 10))
         logging.debug(f"Order Of Magnitude: {order_of_magnitude}")
-
 
         self.steps_x = steps_x
         self.steps_y = steps_y
@@ -124,15 +119,11 @@ class TerrainModler:
         logging.debug(f"max_processes: {self.max_processes}")
         map_farpoint = distance.distance(meters=y_meters).destination(distance.distance(meters=x_meters).destination(self.map_origin, bearing=90), bearing=0)
 
-        self.latitude_delta =  (map_farpoint.latitude - self.map_origin.latitude) / steps_y
+        self.latitude_delta = (map_farpoint.latitude - self.map_origin.latitude) / steps_y
         logging.debug(f"{longitude_size}/{steps_x} = {self.longitude_delta}")
 
-
         self.elevation_manager = ElevationManager(geotiff_folder=geotiff_folder,
-                                                  resolution=-order_of_magnitude,
-                                                  xyz_config=xyz_config,
-                                                  origin_point=self.map_origin,
-                                                  far_point=map_farpoint)
+                                                  resolution=-order_of_magnitude)
         self.z_cache = Manager().dict()
         self.modeler = None
 
@@ -157,8 +148,12 @@ class TerrainModler:
         logging.info(f"Saving File")
         self.modeler.save_stl(filename)
 
-        logging.info(f"5m in z: {self._get_z_for_elevation(elevation=0)}")
-        logging.info(f"6m in z: {self._get_z_for_elevation(elevation=1)}")
+        logging.info(f"Zero elevation z-height: {self._get_z_for_elevation(0)}")
+
+        if self.flatten_reference_elevation_meters:
+            logging.info(f"flatten_reference_elevation_meters elevation: {self._get_z_for_elevation(self.flatten_reference_elevation_meters)}")
+
+        logging.info(f"Done")
 
     def _build_grid(self):
         logging.info(f"Building Model Grid")
@@ -192,15 +187,18 @@ class TerrainModler:
                                     survey_id, longitude, latitude, depth = line.split('\t')
                                 latitude = float(latitude)
                                 longitude = float(longitude)
-                                depth_meters = float(depth) / 3.28084  ## This is feet? ##TODO Confirm this!
+
+                                # This is always feet? ##TODO Confirm this! Parameterize in config? huh?
+                                depth_meters = float(depth) / 3.28084
+
                                 y_guess = math.floor((latitude - self.map_origin.latitude) / self.latitude_delta)
                                 x_guess = math.floor((longitude - self.map_origin.longitude) / self.longitude_delta)
                                 for x_step in range(x_guess - 2, x_guess + 2):
                                     for y_step in range(y_guess - 2, y_guess + 2):
                                         map_point = Point(latitude=map_grid[x_step][y_step].latitude, longitude=map_grid[x_step][y_step].longitude)
                                         map_elevation = map_grid[x_step][y_step].altitude * 1000
-                                        if abs(surface_elevation-map_elevation) < 1:
-                                            delta_distance =  distance.geodesic(map_point, Point(latitude=latitude, longitude=longitude)).m
+                                        if abs(surface_elevation - map_elevation) < 1:
+                                            delta_distance = distance.geodesic(map_point, Point(latitude=latitude, longitude=longitude)).m
                                             if delta_distance < maximum_delta:
                                                 logging.debug(f"FOUND: [{x_step},{y_step}] vs [{x_guess},{y_guess}]")
                                                 if override_grid[x_step][y_step] is None:
@@ -246,15 +244,10 @@ class TerrainModler:
     def _build_map_line(self, x_step):
         x_points = []
         for y_step in range(0, self.steps_y + 1):
-            x, y = Modeler.get_model_x_y_for_steps(size_x=self.size_x, size_y=self.size_y,
-                                                   x_step=x_step, y_step=y_step,
-                                                   steps_x=self.steps_x, steps_y=self.steps_y)
             map_point = self._get_point_from_xy_steps(x_step=x_step, y_step=y_step)
-            # z = self._get_z_for_altitude(altitude=map_point.altitude)
-            # logging.debug(f"(x, y, z) = ({x}, {y}, {z}) = ({map_point.format_decimal(altitude='m')}")
-            # model_point = ModelPoint(x, y, z)
             x_points.append(map_point)
         return x_points
+
     def _build_model_line(self, x_step):
         x_points = []
         for y_step in range(0, self.steps_y + 1):
@@ -267,6 +260,7 @@ class TerrainModler:
             model_point = ModelPoint(x, y, z)
             x_points.append(model_point)
         return x_points
+
     def _get_z_for_altitude(self, altitude):
         # I do elevation in m.  Geopy does altitude in km.
         elevation = round((altitude * 1000), 2)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""mapsen_hgt_to_geotiff.py:
+"""mapzen_hgt_to_geotiff.py:
     This Python script converts MapZen HGT (Height) data files to the GeoTIFF format, which is a standard raster
     data format for geographic information systems (GIS). It allows you to specify the source folder containing
     the MapZen data and the destination folder for the converted GeoTIFF files (which can be the same), as well
@@ -19,7 +19,6 @@
 from argparse import ArgumentParser
 import logging
 import os
-
 
 LONGITUDE_FOLDERS = ["N00", "N01", "N02", "N03", "N04", "N05", "N06", "N07", "N08", "N09",
                      "N10", "N11", "N12", "N13", "N14", "N15", "N16", "N17", "N18", "N19",
@@ -41,10 +40,9 @@ LONGITUDE_FOLDERS = ["N00", "N01", "N02", "N03", "N04", "N05", "N06", "N07", "N0
                      "S80", "S81", "S82", "S83", "S84", "S85", "S86", "S87", "S88", "S89",
                      "S90"]
 
-
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("-d", "--destination",help="Folder the GeoTiffs should be saved to. Default is ./")
+    parser.add_argument("-d", "--destination", help="Folder the GeoTiffs should be saved to. Default is ./")
     parser.add_argument("-s", "--source", help="Folder the MapZen data is in. This is the N00 - S90 folders. Default is ./")
     parser.add_argument("-r", "--remove", action="store_true", help="Indicates if the original *.hgt.gz files should be deleted as the script runs.")
 

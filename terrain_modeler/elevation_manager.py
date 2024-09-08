@@ -5,10 +5,11 @@
     at once.  Additionally it means that when the gridding processes die all the geotiffs go with them.
     __author__      = "Unintelligible Maker"
     __copyright__   = "Copyright 2024"
-    __license__     = "GNU GPL v3"
+    __license__     = "MIT License"
     __version__     = "1.0"
     __maintainer__  = "Unintelligible Maker"
     __email__       = "maker@unintelligiblemaker.com"
+    __project__     = "PyTerrainModeler"
 """
 
 import logging
