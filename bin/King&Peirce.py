@@ -13,7 +13,7 @@
 import logging
 from argparse import ArgumentParser
 import os
-from terrain_modeler.terrain_model import TerrainModler, FlattenMode
+from terrain_modeler.terrain_modeler import TerrainModeler, FlattenMode
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     logging.debug(f"Args: {args}")
 
     logging.info(f"Initializing Class")
-    terrain_modeler = TerrainModler(latitude=47.15,  # Deg N/S
+    terrain_modeler = TerrainModeler(latitude=47.15,  # Deg N/S
                                     longitude=-123,  # Deg W/E
                                     longitude_size=1.213,  # Deg Wide W/E
                                     size_x=200,  # 200 mm model, as my printer is 250x250 max

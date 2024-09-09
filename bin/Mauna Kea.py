@@ -14,7 +14,7 @@
 import logging
 from argparse import ArgumentParser
 import os
-from terrain_modeler.terrain_model import TerrainModler, FlattenMode
+from terrain_modeler.terrain_modeler import TerrainModeler
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     logging.debug(f"Args: {args}")
 
     logging.info(f"Initializing Class")
-    terrain_modeler = TerrainModler(latitude=18.700,
+    terrain_modeler = TerrainModeler(latitude=18.700,
                                     longitude=-156.20,
                                     longitude_size=(156.20 - 154.50),
                                     size_x=size_x,

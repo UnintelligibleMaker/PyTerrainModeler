@@ -1,7 +1,18 @@
-"""
-This is the terrain model builder.  It builds models of real words terrain in the stl format
+"""terrain_model.py
+    The TerrainModeler class is designed to build real-world terrain models in the STL format,
+    taking geographic coordinates, dimensions, resolution, and various terrain-shaping parameters
+    as input. It utilizes parallel processing and can handle different input data formats like
+    GeoTIFF and XYZ files.
 
+    __author__      = "Unintelligible Maker"
+    __copyright__   = "Copyright 2024"
+    __license__     = "MIT License"
+    __version__     = "1.0"
+    __maintainer__  = "Unintelligible Maker"
+    __email__       = "maker@unintelligiblemaker.com"
+    __project__     = "PyTerrainModeler"
 """
+
 import logging
 import os
 import math
@@ -23,7 +34,7 @@ class XYZFileTypes(Enum):
     TYPE_B = 2
 
 
-class TerrainModler:
+class TerrainModeler:
     def __init__(self,
                  latitude,
                  longitude,

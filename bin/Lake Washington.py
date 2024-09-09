@@ -16,7 +16,7 @@
 import logging
 from argparse import ArgumentParser
 import os
-from terrain_modeler.terrain_model import TerrainModler, FlattenMode
+from terrain_modeler.terrain_modeler import TerrainModeler, FlattenMode
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -64,7 +64,7 @@ if __name__ == '__main__':
                         os.path.join(xyz_folder, "H11810a.xyz"),
                         os.path.join(xyz_folder, "H11377.xyz"),]}
     logging.info(f"Initializing Class")
-    terrain_modeler = TerrainModler(
+    terrain_modeler = TerrainModeler(
                                     latitude=47.483285,
                                     # latitude=47.5100,
                                     # longitude=-122.2496,
