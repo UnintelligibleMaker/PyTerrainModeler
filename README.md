@@ -32,7 +32,7 @@
   - Mount Rainier
     - Dry run/Draft: lower res/quicker.  I use this mode when changing other settings and tuning them to a good model
       `python ./bin/Rainier.py -n`
-    - Full Quality.  THis will take a while.  
+    - Full Quality.  This will take a while.  
       `python ./bin/Rainier.py`
   - Other Examples:
     - ./bin/King&Peirce.py
