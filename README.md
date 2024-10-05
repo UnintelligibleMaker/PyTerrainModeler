@@ -65,6 +65,7 @@
                 {surface elevation: [file, file, file, ... ],
                  surface elevation: [file, file, file, ... ]
                  ...}
+  - max_processes: The maxiumim number of processes to have running at a time.  In most cases the default `os.cpu_count() * 2` is good.  Fair warning `1` is mostly for debug so it forces some things to not be parallelized but I do not recommend that unless you are debugging PyTerrainModeler itself.  For example I did a LOT or runs with steps_x & steps_y = 4 and this at one to get the trianges facing the right directions (in vs out).
     
 * Model Errors
   - If a model has a hole in it, meaning there are places of 0 (unitless but usually mm) z-height 
