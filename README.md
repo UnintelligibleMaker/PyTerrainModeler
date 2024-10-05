@@ -6,7 +6,10 @@
 
 * To get Map Data:
   - install awscli
-    `sudo apt install awscli`
+    - Older systems use:
+      `sudo apt install awscli`
+    - Newer ones use:
+      `sudo snap install aws-cli --classic`
   - Make dir
     `mkdir MapZen`
     `cd MapZen`
