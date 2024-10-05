@@ -45,8 +45,8 @@
     - ./bin/Mauna\ Kea.py
 
 * Building your own model - The Options
-  - latitude: This is the latitude of the South West corner of the area to be modeled.  Float -90 - 90.0
-  - longitude: This is the longitude of the South Westcorner of the area to be modeled.  Float -180 - 180.0
+  - latitude: This is the latitude of the South West corner of the area to be modeled.  Float -90.0 - 90.0
+  - longitude: This is the longitude of the South Westcorner of the area to be modeled.  Float -180.0 - 180.0
   - longitude_size: This is the size (length) of the south edge of the map in longitude. Float.
   - size_x: size of the model's x axis.  Technically unitless but usually mm.
   - size_y: size of the model's y axis.  Technically unitless but usually mm.
