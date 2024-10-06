@@ -1,32 +1,35 @@
 # PyTerrainModeler
 
-* Warning
+Warning
   These instructions are known to work on my Ubuntu system.  It's an outline for getting this to work
   not a map or a guide. I am, after all, Unintelligible Maker.
 
-* To get Map Data:
-  - install awscli
-    - Older systems use:\
+Setup:
+* Get Map Data:
+  * install awscli
+     - Older systems use:\
       `sudo apt install awscli`
     - Newer ones use:\
       `sudo snap install aws-cli --classic`
-  - Make dir\
+  - Make dir and move into it\
     `mkdir MapZen`\
     `cd MapZen`
-  - fetch map data
+  - fetch map data into the new MapZen directory\
     `aws s3 cp --no-sign-request --recursive s3://elevation-tiles-prod/skadi ./`
-* To convert it from the hgt files it comes as to the geotiff files I read  
-  - Install GDAL\
+* Convert MapZen Data from the hgt files it comes as to the geotiff files PyTerrainModeler reads  
+  * Install GDAL\
     `sudo apt install gdal-bin`
   - deflate:\
     `python ../bin/mapzen_hgt_to_geotiff --remove`\
-    Note: the --remove says to remove the originals as it goes.
-    This is to save space.
-    You can remove this to keep the originals if you want.
+      Note: the `--remove` says to remove the original hgt files as it goes.
+      This is to save space.
+      You can omit this to keep the originals if you prefer. 
+      I deleted them so the script supports it.
     - That is just a wrapper around:\
-      `gdal_translate -co COMPRESS=DEFLATE -co PREDICTOR=2 {hgt_filename} {tif_filename}`
+      `gdal_translate -co COMPRESS=DEFLATE -co PREDICTOR=2 {hgt_filename} {tif_filename}`\
+      It does all the files and removes the originals, but this is all it does.
 
-* Dependencies:
+* Install Dependencies:
   - GeoPy\
     `pip install geopy`
   - GeoTiff\
@@ -41,11 +44,11 @@
     - Full Quality.  This will take a while.  \
       `python ./bin/Rainier.py`
   - Other Examples:
-    - ./bin/King&Peirce.py
-    - ./bin/Lake\ Washington.py
-    - ./bin/Yosemite.py
-    - ./bin/Italy.py
-    - ./bin/Mauna\ Kea.py
+    - `./bin/King&Peirce.py`
+    - `./bin/Lake\ Washington.py`
+    - `./bin/Yosemite.py`
+    - `./bin/Italy.py`
+    - `./bin/Mauna\ Kea.py`
 
 * Building your own model - The Options
   - latitude: This is the latitude of the South West corner of the area to be modeled.  Float -90.0 - 90.0
@@ -75,9 +78,19 @@
                 {surface elevation: [file, file, file, ... ],
                  surface elevation: [file, file, file, ... ]
                  ...}
-  - max_processes: The maximum number of processes to have running at a time.  In most cases the default `os.cpu_count() * 2` is good. Fair warning `1` is mostly for debug, so it forces some things to not be parallelized. I do not recommend `1` unless you are debugging PyTerrainModeler itself. For example I ran a ton of runs at `1` in a debugger to get all the triangles facing the right directions (in vs out). I do not recommend `1` even if you know what you are doing unless you really need it. \
-    \
-  In general, for me, making a model is an iterative process.  I get the latitude, longitude, and longitude_size from any online mapping program (I use Google Maps, but any will do).  The size_x and size_y are how big I want the model on the printer, and I usually know.  I start with low steps_x and steps_y to keep the iteration time low.  The offset_elevation, scale_z, flatten_reference_elevation_meters, flatten_factor, and flatten_mode are the options I iterate on changing until the model looks right.  Then I set the steps_x and steps_y to get a detailed model. 
+  - max_processes: The maximum number of processes to have running at a time.
+    In most cases the default `os.cpu_count() * 2` is good.
+    Fair warning `1` is mostly for debug, so it forces some things to not be parallelized.
+    I do not recommend `1` unless you are debugging PyTerrainModeler itself.
+    For example, I ran a ton of runs at `1` in a debugger to get all the triangles facing the right directions (in vs. out).
+    I do not recommend `1` even if you know what you are doing unless you really need it.
+    
+  In general, for me, making a model is an iterative process.
+    I get the latitude, longitude, and longitude_size from any online mapping program (I use Google Maps, but any will do).
+    The size_x and size_y are how big I want the model on the printer, and I usually know.
+    I start with low steps_x and steps_y to keep the iteration time low.
+    The offset_elevation, scale_z, flatten_reference_elevation_meters, flatten_factor, and flatten_mode are the options I iterate on changing until the model looks right.
+    Then I set the steps_x and steps_y to get a detailed model. 
     
   
 * Model Errors
