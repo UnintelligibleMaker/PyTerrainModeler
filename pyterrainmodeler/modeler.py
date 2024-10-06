@@ -98,6 +98,7 @@ class Vector(object):
         return sqrt((self.x * self.x) + (self.y * self.y) + (self.z * self.z))
 
     def get_normalized(self):
+        if self.get_magnitude() == 0: return Vector(0,0, 0)
         return Vector(
             (self.x / self.get_magnitude()),
             (self.y / self.get_magnitude()),

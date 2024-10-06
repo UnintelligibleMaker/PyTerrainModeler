@@ -15,7 +15,7 @@ from argparse import ArgumentParser
 import os
 import sys
 
-sys.path.insert(0, os.getcwd())
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
@@ -40,16 +40,16 @@ if __name__ == '__main__':
     logging.debug(f"Args: {args}")
 
     logging.info(f"Initializing Class")
-    terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(latitude=47.15,  # Deg N/S
-                                                                      longitude=-123,  # Deg W/E
+    terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(latitude=47.15,   # Deg N/S for the SW corner
+                                                                      longitude=-123,   # Deg W/E for the SW corner
                                                                       longitude_size=1.213,  # Deg Wide W/E
                                                                       size_x=200,  # 200 mm model, as my printer is 250x250 max
                                                                       size_y=200,  # 200 mm model, as my printer is 250x250 max
-                                                                      steps_x=x_y_steps,  # 200 steps (1/mm draft)
-                                                                      steps_y=x_y_steps,  # 1000 steps (5/mm full size)
+                                                                      steps_x=x_y_steps,  # 200 steps (1 mm draft)
+                                                                      steps_y=x_y_steps,  # 1000 steps (0.2 mm full size)
                                                                       scale_z=8,  # Make z features 8x the scale as x/y
+                                                                      ## Comment out the next lint to see just the land areas
                                                                       offset_elevation=-400,  # The shipping channel in the sounds is deep.  So lower the "zero"
-                                                                      # offset_elevation=0,  # You can leave it and let the water be a hole.
                                                                       min_allowed_z=None,
                                                                       flatten_reference_elevation_meters=5,  # This is the height of Lake Washington.  I wanted
                                                                       # Mercer Island to "pop" ao I put this at the surface level of the lake.  The reality is

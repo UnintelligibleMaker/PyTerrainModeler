@@ -18,7 +18,7 @@ from argparse import ArgumentParser
 import os
 import sys
 
-sys.path.insert(0, os.getcwd())
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':

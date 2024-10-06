@@ -15,13 +15,14 @@ import logging
 from argparse import ArgumentParser
 import os
 import sys
-sys.path.insert(0, os.getcwd())
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("-d", "--debug", action="store_true", help="TUrn on debug logging")
-    parser.add_argument("-n", "--draft", action="store_true", help="TUrn on lower-res draft logging")
+    parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug logging")
+    parser.add_argument("-n", "--draft", action="store_true", help="Turn on lower-res draft logging")
     args = parser.parse_args()
     if args.debug:
         logLevel = logging.DEBUG
@@ -34,29 +35,26 @@ if __name__ == '__main__':
         x_steps = size_x
         y_steps = size_y
     else:
-        x_steps = size_x * 4
-        y_steps = size_y * 4
+        x_steps = size_x * 5
+        y_steps = size_y * 5
 
     logFormat = '%(asctime)s - %(filename)s.%(lineno)s - %(levelname)s -  %(process)d: %(message)s'
     logging.basicConfig(format=logFormat, level=logLevel)
     logging.debug(f"Args: {args}")
 
     logging.info(f"Initializing Class")
-    terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(latitude=18.700,
-                                                                      longitude=-156.20,
-                                                                      longitude_size=(156.20 - 154.50),
-                                                                      size_x=size_x,
-                                                                      size_y=size_y,
-                                                                      steps_x=x_steps,
-                                                                      steps_y=y_steps,
-                                                                      scale_z=4.0,
-                                                                      offset_elevation=-50,
-                                                                      min_allowed_z=0.22,
-                                                                      # offset_elevation=0,
-                                                                      # min_allowed_z=0,
-                                                                      flatten_reference_elevation_meters=0,
-                                                                      flatten_factor=0,
-                                                                      flatten_mode=None,
+    terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(latitude=18.700,  # Deg N/S for the SW corner
+                                                                      longitude=-156.20,  # Deg W/E for the SW corner
+                                                                      longitude_size=(156.20 - 154.50),  # SE corner longitude - SW corner longitude
+                                                                      size_x=size_x,  # 200 mm model, as my printer is 250x250 max
+                                                                      size_y=size_y,  # 200 mm model, as my printer is 250x250 max
+                                                                      steps_x=x_steps,  # 1 mm resolution Draft, 0.2 mm resolution Final
+                                                                      steps_y=y_steps,  # 1 mm resolution Draft, 0.2 mm resolution Final
+                                                                      scale_z=4.0,  # Make z features 4x the scale as x/y for looks.
+                                                                      # Comment out the next two lines if you want to see it without a base.
+                                                                      offset_elevation=-50,  # Push the bottom of the model to -50m elevation
+                                                                      min_allowed_z=0.22,  # Push the sea level back up to sea level by trial an error.
+                                                                      # TODO add min_allowed_elevation
                                                                       geotiff_folder=os.path.join(os.getcwd(), "MapZen"))
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")
