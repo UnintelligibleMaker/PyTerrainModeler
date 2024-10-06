@@ -75,9 +75,9 @@
                 {surface elevation: [file, file, file, ... ],
                  surface elevation: [file, file, file, ... ]
                  ...}
-  - max_processes: The maximum number of processes to have running at a time.  In most cases the default `os.cpu_count() * 2` is good. Fair warning `1` is mostly for debug, so it forces some things to not be parallelized. I do not recommend `1` unless you are debugging PyTerrainModeler itself. For example at `1` to get all the triangles facing the right directions (in vs out). \
+  - max_processes: The maximum number of processes to have running at a time.  In most cases the default `os.cpu_count() * 2` is good. Fair warning `1` is mostly for debug, so it forces some things to not be parallelized. I do not recommend `1` unless you are debugging PyTerrainModeler itself. For example I ran a ton of runs at `1` in a debugger to get all the triangles facing the right directions (in vs out). I do not recommend `1` even if you know what you are doing unless you really need it. \
     \
-  In general, for me, making a model is an iterative process.  I get the latitude, longitude, and longitude_size from any online mapping program (I use Google Maps, but any will do).  The size_x and size_y are how big I want the model on the printer, and I usually know.  I start with low steps_x and steps_y to keep the iteration time low.  The offset_elevation, scale_z, flatten_reference_elevation_meters, flatten_factor, and flatten_mode are the options I iterate on changing until the model looks right.  Then I set the steps_x and steps_y to get a detailed model. \
+  In general, for me, making a model is an iterative process.  I get the latitude, longitude, and longitude_size from any online mapping program (I use Google Maps, but any will do).  The size_x and size_y are how big I want the model on the printer, and I usually know.  I start with low steps_x and steps_y to keep the iteration time low.  The offset_elevation, scale_z, flatten_reference_elevation_meters, flatten_factor, and flatten_mode are the options I iterate on changing until the model looks right.  Then I set the steps_x and steps_y to get a detailed model. 
     
   
 * Model Errors
