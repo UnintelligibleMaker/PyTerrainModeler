@@ -43,13 +43,13 @@ if __name__ == '__main__':
     logging.debug(f"Args: {args}")
 
     logging.info(f"Initializing Class")
-    terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(latitude=37.677360,  # Deg N/S
-                                                                      longitude=-119.667382,  # Deg W/E
+    terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(latitude=37.677360,  # Deg N/S for the SW corner
+                                                                      longitude=-119.667382,  # Deg W/E for the SW corner
                                                                       longitude_size=0.205,  # Deg Wide W/E
                                                                       size_x=size_x,  # 200 mm model, as my printer is 250x250 max
                                                                       size_y=size_y,  # 200 mm model, as my printer is 250x250 max
-                                                                      steps_x=x_steps,  # 200 steps (1/mm draft)
-                                                                      steps_y=y_steps,  # 1000 steps (5/mm full size)
+                                                                      steps_x=x_steps,  # 200 steps (1 mm resolution draft)
+                                                                      steps_y=y_steps,  # 1000 steps (0.2 mm resolution on Final)
                                                                       offset_elevation=1000,  # If 0 is sea level, the whole base gets kinda tall.  I want to push that down soo the base is not as tall.
                                                                       geotiff_folder=os.path.join(os.getcwd(), "MapZen"))
     logging.info(f"Saving STL")
