@@ -14,7 +14,9 @@
 import logging
 from argparse import ArgumentParser
 import os
-from terrain_modeler.terrain_modeler import TerrainModeler
+import sys
+sys.path.insert(0, os.getcwd())
+import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -40,23 +42,22 @@ if __name__ == '__main__':
     logging.debug(f"Args: {args}")
 
     logging.info(f"Initializing Class")
-    terrain_modeler = TerrainModeler(latitude=18.700,
-                                    longitude=-156.20,
-                                    longitude_size=(156.20 - 154.50),
-                                    size_x=size_x,
-                                    size_y=size_y,
-                                    steps_x=x_steps,
-                                    steps_y=y_steps,
-                                    scale_z=4.0,
-                                    offset_elevation=-50,
-                                    min_allowed_z=0.22,
-                                    # offset_elevation=0,
-                                    # min_allowed_z=0,
-                                    flatten_reference_elevation_meters=0,
-                                    flatten_factor=0,
-                                    flatten_mode=None,
-                                    geotiff_folder=os.path.join(os.getcwd(), "MapZen"),
-                                    max_processes=(os.cpu_count() * 2))
+    terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(latitude=18.700,
+                                                                      longitude=-156.20,
+                                                                      longitude_size=(156.20 - 154.50),
+                                                                      size_x=size_x,
+                                                                      size_y=size_y,
+                                                                      steps_x=x_steps,
+                                                                      steps_y=y_steps,
+                                                                      scale_z=4.0,
+                                                                      offset_elevation=-50,
+                                                                      min_allowed_z=0.22,
+                                                                      # offset_elevation=0,
+                                                                      # min_allowed_z=0,
+                                                                      flatten_reference_elevation_meters=0,
+                                                                      flatten_factor=0,
+                                                                      flatten_mode=None,
+                                                                      geotiff_folder=os.path.join(os.getcwd(), "MapZen"))
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")
     terrain_modeler.save_stl(filename=stl_file_name)

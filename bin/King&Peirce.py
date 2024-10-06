@@ -13,7 +13,10 @@
 import logging
 from argparse import ArgumentParser
 import os
-from terrain_modeler.terrain_modeler import TerrainModeler, FlattenMode
+import sys
+
+sys.path.insert(0, os.getcwd())
+import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -37,25 +40,25 @@ if __name__ == '__main__':
     logging.debug(f"Args: {args}")
 
     logging.info(f"Initializing Class")
-    terrain_modeler = TerrainModeler(latitude=47.15,  # Deg N/S
-                                    longitude=-123,  # Deg W/E
-                                    longitude_size=1.213,  # Deg Wide W/E
-                                    size_x=200,  # 200 mm model, as my printer is 250x250 max
-                                    size_y=200,  # 200 mm model, as my printer is 250x250 max
-                                    steps_x=x_y_steps,  # 200 steps (1/mm draft)
-                                    steps_y=x_y_steps,  # 1000 steps (5/mm full size)
-                                    scale_z=8,  # Make z features 8x the scale as x/y
-                                    offset_elevation=-400,  # The shipping channel in the sounds is deep.  So lower the "zero"
-                                    # offset_elevation=0,  # You can leave it and let the water be a hole.
-                                    min_allowed_z=None,
-                                    flatten_reference_elevation_meters=5,  # This is the height of Lake Washington.  I wanted
-                                    # Mercer Island to "pop" ao I put this at the surface level of the lake.  The reality is
-                                    # tuning these parameters is iterative and part of making a good model.  So use draft
-                                    # mode and "play" until it looks good to you.
-                                    flatten_factor=0.9,  # squish the mountains down a bit.
-                                    flatten_mode=FlattenMode.POSITIVE,  # Only the mountains not the shipping channel.
-                                    geotiff_folder=os.path.join(os.getcwd(), "MapZen"),
-                                    max_processes=(os.cpu_count() * 2))  # Use them processors!
+    terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(latitude=47.15,  # Deg N/S
+                                                                      longitude=-123,  # Deg W/E
+                                                                      longitude_size=1.213,  # Deg Wide W/E
+                                                                      size_x=200,  # 200 mm model, as my printer is 250x250 max
+                                                                      size_y=200,  # 200 mm model, as my printer is 250x250 max
+                                                                      steps_x=x_y_steps,  # 200 steps (1/mm draft)
+                                                                      steps_y=x_y_steps,  # 1000 steps (5/mm full size)
+                                                                      scale_z=8,  # Make z features 8x the scale as x/y
+                                                                      offset_elevation=-400,  # The shipping channel in the sounds is deep.  So lower the "zero"
+                                                                      # offset_elevation=0,  # You can leave it and let the water be a hole.
+                                                                      min_allowed_z=None,
+                                                                      flatten_reference_elevation_meters=5,  # This is the height of Lake Washington.  I wanted
+                                                                      # Mercer Island to "pop" ao I put this at the surface level of the lake.  The reality is
+                                                                      # tuning these parameters is iterative and part of making a good model.  So use draft
+                                                                      # mode and "play" until it looks good to you.
+                                                                      flatten_factor=0.9,  # squish the mountains down a bit.
+                                                                      flatten_mode=pyterrainmodeler.terrain_modeler.FlattenMode.POSITIVE,  # Only the mountains not the shipping channel.
+                                                                      geotiff_folder=os.path.join(os.getcwd(), "MapZen"),
+                                                                      max_processes=(os.cpu_count() * 2))  # Use them processors!
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")
     terrain_modeler.save_stl(filename=stl_file_name)

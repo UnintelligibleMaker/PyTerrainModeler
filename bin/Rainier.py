@@ -16,7 +16,10 @@
 import logging
 from argparse import ArgumentParser
 import os
-from terrain_modeler.terrain_modeler import TerrainModeler
+import sys
+
+sys.path.insert(0, os.getcwd())
+import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -38,21 +41,16 @@ if __name__ == '__main__':
     logging.debug(f"Args: {args}")
 
     logging.info(f"Initializing Class")
-    terrain_modeler = TerrainModeler(latitude=46.715750,
-                                    longitude=-121.920366,
-                                    longitude_size=0.384769,
-                                    size_x=200,
-                                    size_y=200,
-                                    steps_x=x_y_steps,
-                                    steps_y=x_y_steps,
-                                    scale_z=1.25,
-                                    offset_elevation=400,
-                                    min_allowed_z=None,
-                                    flatten_reference_elevation_meters=0,
-                                    flatten_factor=1,
-                                    flatten_mode=None,
-                                    geotiff_folder=os.path.join(os.getcwd(), "MapZen"),
-                                    max_processes=(os.cpu_count() * 2))
+    terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(latitude=46.715750,  # Deg N/S
+                                                                      longitude=-121.920366,  # Deg W/E
+                                                                      longitude_size=0.384769,  # Deg Wide W/E
+                                                                      size_x=200,  # 200 mm model, as my printer is 250x250 max
+                                                                      size_y=200,  # 200 mm model, as my printer is 250x250 max
+                                                                      steps_x=x_y_steps,  # 200 steps (200 steps or 1 mm resolution draft)
+                                                                      steps_y=x_y_steps,  # 1000 steps (1000 steps or 0.2 mm resolution on full size)
+                                                                      scale_z=1.25,  # Make z features 1.25x the scale as x/y, make it 25% taller because it looks better!
+                                                                      offset_elevation=400,  # If 0 is sea level, the whole base gets kinda tall.  I want to push that down soo the base is not as tall.
+                                                                      geotiff_folder=os.path.join(os.getcwd(), "MapZen"))
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")
     terrain_modeler.save_stl(filename=stl_file_name)

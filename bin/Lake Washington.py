@@ -16,7 +16,10 @@
 import logging
 from argparse import ArgumentParser
 import os
-from terrain_modeler.terrain_modeler import TerrainModeler, FlattenMode
+import sys
+
+sys.path.insert(0, os.getcwd())
+import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -62,28 +65,26 @@ if __name__ == '__main__':
                         os.path.join(xyz_folder, "H11293a.xyz"),
                         os.path.join(xyz_folder, "H11376.xyz"),
                         os.path.join(xyz_folder, "H11810a.xyz"),
-                        os.path.join(xyz_folder, "H11377.xyz"),]}
+                        os.path.join(xyz_folder, "H11377.xyz"), ]}
     logging.info(f"Initializing Class")
-    terrain_modeler = TerrainModeler(
-                                    latitude=47.483285,
-                                    # latitude=47.5100,
-                                    # longitude=-122.2496,
-                                    longitude=-122.3123689,
-                                    longitude_size=(122.3123689 - 122.134938),
-                                    # longitude_size=(122.2496 - 122.2100),
-                                    size_x=size_x,
-                                    size_y=size_y,
-                                    steps_x=x_steps,
-                                    steps_y=y_steps,
-                                    scale_z=8,
-                                    offset_elevation=-25,
-                                    flatten_reference_elevation_meters=4.9,
-                                    flatten_factor=1,
-                                    flatten_mode=FlattenMode.POSITIVE,
-                                    geotiff_folder=os.path.join(os.getcwd(), "MapZen"),
-                                    xyz_config=xyz_config,  # Comment this line out to skip the xyz files and see both the
-                                                            # difference in model and processing time.
-                                    max_processes=(os.cpu_count() * 2))
+    terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(
+        latitude=47.483285,
+        longitude=-122.3123689,
+        longitude_size=(122.3123689 - 122.134938),
+        size_x=size_x,
+        size_y=size_y,
+        steps_x=x_steps,
+        steps_y=y_steps,
+        scale_z=8,
+        offset_elevation=-25,
+        flatten_reference_elevation_meters=4.9,
+        flatten_factor=1,
+        flatten_mode=pyterrainmodeler.terrain_modeler.FlattenMode.POSITIVE,
+        geotiff_folder=os.path.join(os.getcwd(), "MapZen"),
+        xyz_config=xyz_config,  # Comment this line out to skip the xyz files and see both the
+        # difference in model and processing time.
+    )
+
     stl_file_name = "terrain.stl"
     logging.info(f"Saving STL file: {stl_file_name}")
     terrain_modeler.save_stl(filename=stl_file_name)

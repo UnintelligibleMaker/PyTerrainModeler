@@ -307,7 +307,7 @@ class TerrainModeler:
 
         z = round((adjusted_elevation / self.meters_model_ratio) * self.scale_z, 2)
         if self.min_allowed_z and z < self.min_allowed_z:
-            logging.warning(f"Your point's final {z} is less then the allowed {self.min_allowed_z}, moving it up.")
+            logging.info(f"Your point's final {z} is less then the allowed {self.min_allowed_z}, moving it up.")
             z = self.min_allowed_z
 
         if z < 0:
