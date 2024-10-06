@@ -37,12 +37,13 @@ Setup:
   - numpy-stl\
     `pip install numpy-stl`
 
-* Building an example model
+* Building an example model \
+  All these example generate a `terrain.stl` file in the local directory that you can open in Cura and PrusaSlicer.
   - Mount Rainier
     - Dry run/Draft: lower res/quicker.  I use this mode when changing other settings and tuning them to a good model\
-      `python ./bin/Rainier.py -n`
+      `python3 ./bin/Rainier.py -n`
     - Full Quality.  This will take a while.  \
-      `python ./bin/Rainier.py`
+      `python3 ./bin/Rainier.py`
   - Other Examples:
     - `./bin/King&Peirce.py`
     - `./bin/Lake\ Washington.py`
