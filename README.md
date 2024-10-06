@@ -81,5 +81,5 @@
     
   
 * Model Errors
-  - If a model has a hole in it, meaning there are places of 0 z-height that are omitted from the mode, it can create a "model" that is not totally connected as one object...but an STL has only one object.  So mine ends up somewhat deformed, but eh both Cura and PrusaSlicer open and slice them.\
+  - If a model has a hole in it, meaning there are places of 0 z-height that are omitted from the mode, it can create a "model" that is not totally connected as one object...but an STL has only one object.  So mine ends up somewhat deformed, but eh both Cura and PrusaSlicer open and slice them.
   - Sometimes (though it's rare now) a triangle faces the wrong way (in vs out of the model).  There are bugs that I hope are getting rarer.  I'm good with righty-tighty / lefty-loosey even when rotated backwards but not as good with clockwise and anti-clockwise when rotated backwards. Most slicers will be OK with this, though some will point out the model errors.  I ignore them and let the slicers deal with it but that's just me, Unintelligible Maker.
