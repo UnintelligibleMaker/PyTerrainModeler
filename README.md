@@ -5,6 +5,12 @@ Warning
   not a map or a guide. I am, after all, Unintelligible Maker.
 
 Setup:
+* Get the code
+  * Install git:
+    `sudo apt install git-all`
+  * Pull the code:
+    `git clone https://github.com/UnintelligibleMaker/PyTerrainModeler.git`
+    `cd PyTerrainModeler`
 * Get Map Data:
   * install awscli
      - Older systems use:\
