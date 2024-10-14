@@ -27,6 +27,7 @@ Setup:
   * Install GDAL\
     `sudo apt install gdal-bin`
   - deflate:\
+     Note: I use `python` here but on many newer systems you will need to use `python3`. 
     `python ../bin/mapzen_hgt_to_geotiff --remove`\
       Note: the `--remove` says to remove the original hgt files as it goes.
       This is to save space.
