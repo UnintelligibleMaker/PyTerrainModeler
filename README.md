@@ -9,6 +9,7 @@ Setup:
   * Install git:\
     `sudo apt install git-all`
   * Pull the code:\
+    Note: This is ~200GB of data.  It's from MapZen/Open TOPO.  This is their recomended download procdure.  https://www.opentopodata.org/datasets/mapzen/ I used this as it's free.\
     `git clone https://github.com/UnintelligibleMaker/PyTerrainModeler.git`\
     `cd PyTerrainModeler`
 * Get Map Data:
