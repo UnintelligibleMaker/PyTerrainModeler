@@ -101,7 +101,7 @@ Setup:
     The offset_elevation, scale_z, flatten_reference_elevation_meters, flatten_factor, and flatten_mode are the options I iterate on changing until the model looks right.
     Then I set the steps_x and steps_y to get a detailed model. 
 
-* STL?  What's that?
+* STL?  What's that?\
   An STL file is a 3d model that's commonly used for 3D printing or CNC machining.  I am not an expert on them and based this work mostly on my knowledge of 3D graphics from working on the hardware in a former job.  I just push the data into an STL as that's easy.  More info about STLs: https://www.adobe.com/creativecloud/file-types/image/vector/stl-file.html
   
 * Model Errors
