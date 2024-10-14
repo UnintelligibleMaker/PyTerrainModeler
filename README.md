@@ -6,10 +6,10 @@ Warning
 
 Setup:
 * Get the code
-  * Install git:
+  * Install git:\
     `sudo apt install git-all`
-  * Pull the code:
-    `git clone https://github.com/UnintelligibleMaker/PyTerrainModeler.git`
+  * Pull the code:\
+    `git clone https://github.com/UnintelligibleMaker/PyTerrainModeler.git`\
     `cd PyTerrainModeler`
 * Get Map Data:
   * install awscli
