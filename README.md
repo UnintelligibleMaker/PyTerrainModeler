@@ -9,7 +9,6 @@ Setup:
   * Install git:\
     `sudo apt install git-all`
   * Pull the code:\
-    Note: This is ~200GB of data.  It's from MapZen/Open TOPO.  This is their recomended download procdure.  https://www.opentopodata.org/datasets/mapzen/ I used this as it's free.\
     `git clone https://github.com/UnintelligibleMaker/PyTerrainModeler.git`\
     `cd PyTerrainModeler`
 * Get Map Data:
@@ -22,6 +21,7 @@ Setup:
     `mkdir MapZen`\
     `cd MapZen`
   - fetch map data into the new MapZen directory\
+    Note: This is ~200GB of data.  It's from MapZen/Open TOPO.  This is their recomended download procdure.  https://www.opentopodata.org/datasets/mapzen/ I used this as it's free.\
     `aws s3 cp --no-sign-request --recursive s3://elevation-tiles-prod/skadi ./`
 * Convert MapZen Data from the hgt files it comes as to the geotiff files PyTerrainModeler reads  
   * Install GDAL\
