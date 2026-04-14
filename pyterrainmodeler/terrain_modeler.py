@@ -18,12 +18,13 @@ import os
 import math
 from geopy import Point, distance
 from enum import Enum
+from typing import Optional, Dict, List, Tuple
 from .elevation_manager import ElevationManager
 from .modeler import Modeler, ModelPoint
 from multiprocessing import Manager, Pool
 
 
-FEET_TO_METERS = 3.28084
+FEET_TO_METERS: float = 0.3048
 
 
 class FlattenMode(Enum):
@@ -39,23 +40,23 @@ class XYZFileTypes(Enum):
 
 class TerrainModeler:
     def __init__(self,
-                 latitude,
-                 longitude,
-                 longitude_size,
-                 size_x,
-                 size_y,
-                 steps_x,
-                 steps_y,
-                 scale_z=1,
-                 offset_elevation=0,
-                 min_allowed_z=0,
-                 flatten_reference_elevation_meters=0,
-                 flatten_factor=1,
-                 flatten_mode=None,
-                 hgt_gz_folder=None,
-                 xyz_config=None,
-                 xyz_units='feet',
-                 max_processes=(os.cpu_count() * 2)):
+                 latitude: float,
+                 longitude: float,
+                 longitude_size: float,
+                 size_x: float,
+                 size_y: float,
+                 steps_x: int,
+                 steps_y: int,
+                 scale_z: float = 1,
+                 offset_elevation: float = 0,
+                 min_allowed_z: float = 0,
+                 flatten_reference_elevation_meters: float = 0,
+                 flatten_factor: float = 1,
+                 flatten_mode: Optional[FlattenMode] = None,
+                 hgt_gz_folder: Optional[str] = None,
+                 xyz_config: Optional[Dict[float, List[str]]] = None,
+                 xyz_units: str = 'feet',
+                 max_processes: int = (os.cpu_count() * 2)):
         """
             This is the terrain model builder.  It builds models of real world terrain in the stl format
 
@@ -81,69 +82,69 @@ class TerrainModeler:
         :param xyz_units: units of the depth in the XYZ files.  Can be 'feet' or 'meters'.
         :param max_processes: max processes The maximum number of processes to have running at a time.
         """
-        self.longitude_delta = longitude_size / steps_x
+        self.longitude_delta: float = longitude_size / steps_x
         logging.debug(f"{longitude_size}/{steps_x} = {self.longitude_delta}")
 
-        order_of_magnitude = -4  # math.floor(math.log(longitude_delta, 10))
+        order_of_magnitude: int = -4  # math.floor(math.log(longitude_delta, 10))
         logging.debug(f"Order Of Magnitude: {order_of_magnitude}")
 
-        self.steps_x = steps_x
-        self.steps_y = steps_y
-        self.size_x = size_x
-        self.size_y = size_y
-        self.xyz_config = xyz_config
-        self.map_origin = Point(latitude, longitude)
+        self.steps_x: int = steps_x
+        self.steps_y: int = steps_y
+        self.size_x: float = size_x
+        self.size_y: float = size_y
+        self.xyz_config: Optional[Dict[float, List[str]]] = xyz_config
+        self.map_origin: Point = Point(latitude, longitude)
         logging.debug(f"map_origin: {self.map_origin}")
 
-        x_meters = distance.distance((latitude, longitude), (latitude, longitude + longitude_size)).meters
+        x_meters: float = distance.distance((latitude, longitude), (latitude, longitude + longitude_size)).meters
         logging.debug(f"y_meters: {x_meters}")
 
-        self.scale_z = scale_z
+        self.scale_z: float = scale_z
         logging.debug(f"scale_z: {self.scale_z}")
 
-        self.offset_elevation = offset_elevation
+        self.offset_elevation: float = offset_elevation
         logging.debug(f"offset_elevation: {self.offset_elevation}")
 
-        self.min_allowed_z = min_allowed_z
+        self.min_allowed_z: float = min_allowed_z
         logging.debug(f"min_allowed_z: {self.min_allowed_z}")
 
-        self.flatten_reference_elevation_meters = flatten_reference_elevation_meters
+        self.flatten_reference_elevation_meters: float = flatten_reference_elevation_meters
         logging.debug(f"flatten_reference_elevation_meters: {self.flatten_reference_elevation_meters}")
 
-        self.flatten_factor = flatten_factor
+        self.flatten_factor: float = flatten_factor
         logging.debug(f"flatten_factor: {self.flatten_factor}")
 
-        self.flatten_mode = flatten_mode
+        self.flatten_mode: Optional[FlattenMode] = flatten_mode
         logging.debug(f"flatten_mode: {self.flatten_mode}")
 
-        self.xyz_units = xyz_units
+        self.xyz_units: str = xyz_units
         logging.debug(f"xyz_units: {self.xyz_units}")
 
-        self.x_step_meters = x_meters / steps_x
+        self.x_step_meters: float = x_meters / steps_x
         logging.debug(f"x_step_meters: {self.x_step_meters}")
 
-        self.meters_model_ratio = x_meters / size_x
+        self.meters_model_ratio: float = x_meters / size_x
         logging.debug(f"meters:model ratio: {self.meters_model_ratio}:1")
 
-        y_meters = self.meters_model_ratio * size_y
+        y_meters: float = self.meters_model_ratio * size_y
         logging.debug(f"y_meters: {y_meters}")
 
-        self.y_step_meters = y_meters / steps_y
+        self.y_step_meters: float = y_meters / steps_y
         logging.debug(f"y_step_meters: {self.y_step_meters}")
 
-        self.max_processes = max_processes
+        self.max_processes: int = max_processes
         logging.debug(f"max_processes: {self.max_processes}")
-        map_farpoint = distance.distance(meters=y_meters).destination(distance.distance(meters=x_meters).destination(self.map_origin, bearing=90), bearing=0)
+        map_farpoint: Point = distance.distance(meters=y_meters).destination(distance.distance(meters=x_meters).destination(self.map_origin, bearing=90), bearing=0)
 
-        self.latitude_delta = (map_farpoint.latitude - self.map_origin.latitude) / steps_y
+        self.latitude_delta: float = (map_farpoint.latitude - self.map_origin.latitude) / steps_y
         logging.debug(f"{longitude_size}/{steps_x} = {self.longitude_delta}")
 
-        self.elevation_manager = ElevationManager(hgt_gz_folder=hgt_gz_folder,
-                                                  resolution=-order_of_magnitude)
-        self.z_cache = Manager().dict()
-        self.modeler = None
+        self.elevation_manager: ElevationManager = ElevationManager(hgt_gz_folder=hgt_gz_folder,
+                                                                    resolution=-order_of_magnitude)
+        self.z_cache: Dict[float, float] = Manager().dict()  # type: ignore
+        self.modeler: Optional[Modeler] = None
 
-    def save_stl(self, filename):
+    def save_stl(self, filename: str) -> None:
         grid = self._build_grid()
 
         self.modeler = Modeler(size_x=self.size_x,
@@ -171,18 +172,18 @@ class TerrainModeler:
 
         logging.info(f"Done")
 
-    def _build_grid(self):
+    def _build_grid(self) -> List[List[ModelPoint]]:
         logging.info(f"Building Model Grid")
         with Pool(self.max_processes) as p:
             map_grid = p.map(self._build_map_line, range(0, self.steps_x + 1))
         logging.debug(f"map_grid: {map_grid}")
 
-        override_grid = [[None] * (self.steps_y + 1) for i in range(0, self.steps_x + 1)]
+        override_grid: List[List[Optional[Tuple[float, Optional[float]]]]] = [[None] * (self.steps_y + 1) for i in range(0, self.steps_x + 1)]
         if self.xyz_config:
             maximum_delta = math.sqrt((self.x_step_meters * self.x_step_meters) + (self.y_step_meters * self.y_step_meters)) * 0.7
             override_points_to_expand = []
             for surface_elevation, files in self.xyz_config.items():
-                logging.info(f"Processing surface_elevation {surface_elevation} files from {files}")
+                logging.debug(f"Processing surface_elevation {surface_elevation} files from {files}")
                 for xyz_file in files:
                     with (open(xyz_file) as f):
                         file_format = None
@@ -190,24 +191,25 @@ class TerrainModeler:
                             if file_format is None:
                                 if line.count(',') == 5 and line.count('\t') == 0:
                                     file_format = XYZFileTypes.TYPE_A
-                                    logging.info(f"Found TypeA File")
+                                    logging.debug(f"Found TypeA File")
                                 elif line.count(',') == 0 and line.count('\t') == 3:
                                     file_format = XYZFileTypes.TYPE_B
-                                    logging.info(f"Found TypeB File")
+                                    logging.debug(f"Found TypeB File")
                                 else:
                                     raise TypeError(f"File type of {xyz_file} is unknown. Pattern is: {line.count(',')}-{line.count('\t')}")
                             else:
                                 if file_format == XYZFileTypes.TYPE_A:
-                                    survey_id, latitude, longitude, depth, quality_code, active = line.split(',')
+                                    survey_id, latitude_str, longitude_str, depth_str, quality_code, active = line.split(',')
                                 elif file_format == XYZFileTypes.TYPE_B:
-                                    survey_id, longitude, latitude, depth = line.split('\t')
-                                latitude = float(latitude)
-                                longitude = float(longitude)
+                                    survey_id, longitude_str, latitude_str, depth_str = line.split('\t')
+                                latitude = float(latitude_str)
+                                longitude = float(longitude_str)
+                                depth = float(depth_str)
 
                                 # This is either feet or meters.
-                                depth_meters = float(depth)
+                                depth_meters = depth
                                 if self.xyz_units == 'feet':
-                                    depth_meters = float(depth) / FEET_TO_METERS
+                                    depth_meters = depth * FEET_TO_METERS
 
                                 y_guess = math.floor((latitude - self.map_origin.latitude) / self.latitude_delta)
                                 x_guess = math.floor((longitude - self.map_origin.longitude) / self.longitude_delta)
@@ -243,7 +245,7 @@ class TerrainModeler:
                             override_grid[neighbor_x][neighbor_y] = (-depth_meters, None)
                             override_points_to_expand.append((neighbor_x, neighbor_y, surface_elevation, depth_meters))
 
-        grid = []
+        grid: List[List[ModelPoint]] = []
         for x_step in range(0, self.steps_x + 1):
             grid.append([])
             for y_step in range(0, self.steps_y + 1):
@@ -259,15 +261,15 @@ class TerrainModeler:
                 grid[x_step].append(model_point)
         return grid
 
-    def _build_map_line(self, x_step):
-        x_points = []
+    def _build_map_line(self, x_step: int) -> List[Point]:
+        x_points: List[Point] = []
         for y_step in range(0, self.steps_y + 1):
             map_point = self._get_point_from_xy_steps(x_step=x_step, y_step=y_step)
             x_points.append(map_point)
         return x_points
 
-    def _build_model_line(self, x_step):
-        x_points = []
+    def _build_model_line(self, x_step: int) -> List[ModelPoint]:
+        x_points: List[ModelPoint] = []
         for y_step in range(0, self.steps_y + 1):
             x, y = Modeler.get_model_x_y_for_steps(size_x=self.size_x, size_y=self.size_y,
                                                    x_step=x_step, y_step=y_step,
@@ -279,42 +281,42 @@ class TerrainModeler:
             x_points.append(model_point)
         return x_points
 
-    def _get_z_for_altitude(self, altitude):
+    def _get_z_for_altitude(self, altitude: float) -> float:
         # I do elevation in m.  Geopy does altitude in km.
         elevation = round((altitude * 1000), 2)
         return self._get_z_for_elevation(elevation=elevation)
 
-    def _get_z_for_elevation(self, elevation):
-        round_elecation = round(elevation, 2)
-        logging.debug(f"Elevation: {round_elecation}")
-        if round_elecation in self.z_cache:
-            return self.z_cache[round_elecation]
+    def _get_z_for_elevation(self, elevation: float) -> float:
+        round_elevation = round(elevation, 2)
+        logging.debug(f"Elevation: {round_elevation}")
+        if round_elevation in self.z_cache:
+            return self.z_cache[round_elevation]
 
-        if (round_elecation < self.flatten_reference_elevation_meters
+        if (round_elevation < self.flatten_reference_elevation_meters
                 and self.flatten_mode in [FlattenMode.BOTH, FlattenMode.NEGATIVE]):
-            elevation_delta = self.flatten_reference_elevation_meters - round_elecation
+            elevation_delta = self.flatten_reference_elevation_meters - round_elevation
             flattened_elevation_delta = math.pow(abs(elevation_delta), self.flatten_factor)
             adjusted_elevation = (self.flatten_reference_elevation_meters
                                   - flattened_elevation_delta
                                   - self.offset_elevation)
             logging.debug(
-                f"Flatten Negative: {round_elecation} --> {adjusted_elevation} on {self.flatten_reference_elevation_meters} "
+                f"Flatten Negative: {round_elevation} --> {adjusted_elevation} on {self.flatten_reference_elevation_meters} "
                 f"and {elevation_delta} and {flattened_elevation_delta}")
-        elif (round_elecation > self.flatten_reference_elevation_meters
+        elif (round_elevation > self.flatten_reference_elevation_meters
               and self.flatten_mode in [FlattenMode.BOTH, FlattenMode.POSITIVE]):
-            elevation_delta = round_elecation - self.flatten_reference_elevation_meters
+            elevation_delta = round_elevation - self.flatten_reference_elevation_meters
             flattened_elevation_delta = math.pow(abs(elevation_delta), self.flatten_factor)
             adjusted_elevation = ((self.flatten_reference_elevation_meters + flattened_elevation_delta)
                                   - self.offset_elevation)
             logging.debug(
-                f"Flatten Positive: {round_elecation} --> {adjusted_elevation} on {self.flatten_reference_elevation_meters} "
+                f"Flatten Positive: {round_elevation} --> {adjusted_elevation} on {self.flatten_reference_elevation_meters} "
                 f"and {elevation_delta} and {flattened_elevation_delta}")
         else:
-            adjusted_elevation = round_elecation - self.offset_elevation
+            adjusted_elevation = round_elevation - self.offset_elevation
 
         z = round((adjusted_elevation / self.meters_model_ratio) * self.scale_z, 2)
         if self.min_allowed_z and z < self.min_allowed_z:
-            logging.info(f"Your point's final {z} is less then the allowed {self.min_allowed_z}, moving it up.")
+            logging.debug(f"Your point's final {z} is less than the allowed {self.min_allowed_z}, moving it up.")
             z = self.min_allowed_z
 
         if z < 0:
@@ -322,20 +324,20 @@ class TerrainModeler:
         logging.debug(f"z: {z}")
         return z
 
-    def _get_point_from_xy_steps(self, x_step, y_step):
+    def _get_point_from_xy_steps(self, x_step: int, y_step: int) -> Point:
         return self._get_point_from_xy_meters(x_meters=(x_step * self.x_step_meters),
                                               y_meters=(y_step * self.y_step_meters))
 
-    def _get_point_from_xy_meters(self, x_meters, y_meters):
+    def _get_point_from_xy_meters(self, x_meters: float, y_meters: float) -> Point:
         """
         _get_point_from_xy_meters - Get the Point for the location on the map, including elevation.
 
+        :param x_meters: the number of meters east to go on the map from the origin point
         :param y_meters: the number of meters north to go on the map from the origin point
-        :param y_meters: the number of meters east to go on the map from the origin point
 
         :return: Point with the final location and elevation
         """
-        endpoint_sealevel = distance.distance(meters=y_meters).destination(distance.distance(meters=x_meters).destination(self.map_origin, bearing=90), bearing=0)
+        endpoint_sealevel: Point = distance.distance(meters=y_meters).destination(distance.distance(meters=x_meters).destination(self.map_origin, bearing=90), bearing=0)
         elevation = self.elevation_manager.get_elevation_for_latitude_longitude(latitude=endpoint_sealevel.latitude,
                                                                                 longitude=endpoint_sealevel.longitude)
         endpoint = Point(latitude=endpoint_sealevel.latitude,

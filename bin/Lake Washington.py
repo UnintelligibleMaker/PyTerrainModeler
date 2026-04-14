@@ -1,9 +1,9 @@
 """Lake Washington.py: A simple example of using the TerrainModeler class.
 
     This is an example of using the TerrainModeler class to generate a model of
-    Lake Washington in Washington state.  The "cool" this able this is I use NOAA
-    bathymetric .data to remove the water from the lake.  My intention here is to print the lake bed blue...to show depth
-    but I'm not that far along in the project.  It's kina cool to see and maybe someone else will have a use for it too.
+    Lake Washington in Washington state.  The cool thing about this is I use NOAA
+    bathymetric data to remove the water from the lake.  My intention here is to print the lake bed blue...to show depth
+    but I'm not that far along in the project.  It's kind of cool to see and maybe someone else will have a use for it too.
     __author__      = "Unintelligible Maker"
     __copyright__   = "Copyright 2024"
     __license__     = "MIT License"
@@ -16,9 +16,7 @@
 import logging
 from argparse import ArgumentParser
 import os
-import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
@@ -80,7 +78,7 @@ if __name__ == '__main__':
         flatten_reference_elevation_meters=4.9,
         flatten_factor=1,
         flatten_mode=pyterrainmodeler.terrain_modeler.FlattenMode.POSITIVE,
-        hgt_gz_folder=os.path.join(os.getcwd(), "..", "MapZen"),
+        hgt_gz_folder=os.path.join(os.getcwd(), "MapZen"),
         xyz_config=xyz_config,  # Comment this line out to skip the xyz files and see both the
         # difference in model and processing time.
     )

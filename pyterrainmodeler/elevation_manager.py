@@ -16,15 +16,16 @@ import logging
 import os
 import math
 import gzip
-from numpy import array as nparray, frombuffer
+from typing import Optional, Dict, Tuple
+from numpy import array as nparray, frombuffer, ndarray
 from multiprocessing import Manager
 
 
 class ElevationManager(object):
 
     def __init__(self,
-                 hgt_gz_folder=None,
-                 resolution=4):
+                 hgt_gz_folder: Optional[str] = None,
+                 resolution: int = 4):
         """
         :param hgt_gz_folder: The folder where the hgt.gz files are stored
         :param resolution: The resolution (10 ^ -n) of the elevation data.
@@ -33,28 +34,28 @@ class ElevationManager(object):
                         6 is 0.000001 deg of lat/long which is like 11 cm or less
                         This is all probably more than the elevation data itself.
         """
-        self.hgt_gz_folder = hgt_gz_folder
-        self.resolution = max(resolution, 4)
+        self.hgt_gz_folder: Optional[str] = hgt_gz_folder
+        self.resolution: int = max(resolution, 4)
 
-        self.elevation_cache = Manager().dict()
+        self.elevation_cache: Dict[str, float] = Manager().dict()
 
-        self.open_files = {}
+        self.open_files: Dict[str, Tuple[int, ndarray]] = {}
 
-    def _increment_by_resolution(self, initial_value):
+    def _increment_by_resolution(self, initial_value: float) -> float:
         """
         :param initial_value: The value to increment
         :return: The value incremented by the resolution
         """
         return self._increment_by_n_resolution(initial_value=initial_value, n=1)
 
-    def _decrement_by_resolution(self, initial_value):
+    def _decrement_by_resolution(self, initial_value: float) -> float:
         """
         :param initial_value: The value to decrement
         :return: The value decremented by the resolution
         """
         return self._increment_by_n_resolution(initial_value=initial_value, n=-1)
 
-    def _increment_by_n_resolution(self, initial_value, n):
+    def _increment_by_n_resolution(self, initial_value: float, n: int) -> float:
         """
         :param initial_value: The value to increment
         :param n: The number of times to increment (or decrement if negative) the value by the resolution
@@ -66,7 +67,7 @@ class ElevationManager(object):
         final_value = rounded_initial_value + n_delta
         return round(final_value, self.resolution)
 
-    def get_elevation_for_latitude_longitude(self, latitude, longitude):
+    def get_elevation_for_latitude_longitude(self, latitude: float, longitude: float) -> float:
         """
         :param latitude: The latitude to get the elevation for
         :param longitude: The longitude to get the elevation for
@@ -90,7 +91,7 @@ class ElevationManager(object):
 
         raise ValueError("Could not find a value for the elevation")
 
-    def _get_elevation_from_hgt_gz(self, latitude, longitude):
+    def _get_elevation_from_hgt_gz(self, latitude: float, longitude: float) -> Optional[float]:
         """
         :param latitude: The latitude to get the elevation for
         :param longitude: The longitude to get the elevation for
@@ -123,7 +124,7 @@ class ElevationManager(object):
             logging.debug(f"Elevation HGT.GZ Miss: ({latitude},{longitude})")
         return elevation
 
-    def _get_hgt_gz_filename(self, latitude, longitude):
+    def _get_hgt_gz_filename(self, latitude: float, longitude: float) -> str:
         """
         :param latitude: The latitude to get the hgt.gz filename for
         :param longitude: The longitude to get the hgt.gz filename for

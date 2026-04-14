@@ -13,9 +13,7 @@
 import logging
 from argparse import ArgumentParser
 import os
-import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
@@ -57,7 +55,7 @@ if __name__ == '__main__':
                                                                       # mode and "play" until it looks good to you.
                                                                       flatten_factor=0.9,  # squish the mountains down a bit.
                                                                       flatten_mode=pyterrainmodeler.terrain_modeler.FlattenMode.POSITIVE,  # Only the mountains not the shipping channel.
-                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "..", "MapZen"),
+                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "MapZen"),
                                                                       max_processes=(os.cpu_count() * 2))  # Use them processors!
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")

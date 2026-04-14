@@ -27,7 +27,8 @@
 import logging
 from math import sqrt
 from multiprocessing import Pool
-from numpy import array as nparray
+from typing import List, Tuple, Optional, Any
+from numpy import array as nparray, ndarray
 from stl.mesh import Mesh
 
 
@@ -37,13 +38,13 @@ class ModelPoint(object):
         self.y = y
         self.z = z
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"ModelPoint({self.x}, {self.y}, {self.z})"
 
-    def is_on_floor(self):
+    def is_on_floor(self) -> bool:
         return self.z == 0
 
-    def get_floor_copy(self):
+    def get_floor_copy(self) -> 'ModelPoint':
         return ModelPoint(self.x, self.y, 0)
 
 
@@ -54,10 +55,10 @@ class Triangle(object):
         self.b = b
         self.c = c
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Triangle({self.a}, {self.b}, {self.c})"
 
-    def get_normal(self):
+    def get_normal(self) -> 'Vector':
         logging.debug(self)
         v1 = Vector(self.a.x - self.b.x, self.a.y - self.b.y, self.a.z - self.b.z)
         logging.debug(f"v1: {v1}")
@@ -69,10 +70,10 @@ class Triangle(object):
         logging.debug(f"normal_vector: {normal_vector} = {normal_vector.get_magnitude()}")
         return normal_vector
 
-    def is_on_floor(self):
+    def is_on_floor(self) -> bool:
         return self.a.is_on_floor() and self.b.is_on_floor() and self.c.is_on_floor()
 
-    def get_face(self):
+    def get_face(self) -> Tuple[List[float], List[List[float]], List[float]]:
         normal_vector = self.get_normal()
         return ([normal_vector.x, normal_vector.y, normal_vector.z],
                 [[self.a.x, self.a.y, self.a.z],
@@ -80,7 +81,7 @@ class Triangle(object):
                  [self.c.x, self.c.y, self.c.z]],
                 [0.0])
 
-    def get_floor_copy(self):
+    def get_floor_copy(self) -> 'Triangle':
         return Triangle(self.a.get_floor_copy(), self.c.get_floor_copy(), self.b.get_floor_copy())
 
 
@@ -90,21 +91,22 @@ class Vector(object):
         self.y = y
         self.z = z
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Vector({self.x}, {self.y}, {self.z})"
 
-    def get_magnitude(self):
+    def get_magnitude(self) -> float:
         return sqrt((self.x * self.x) + (self.y * self.y) + (self.z * self.z))
 
-    def get_normalized(self):
-        if self.get_magnitude() == 0: return Vector(0,0, 0)
+    def get_normalized(self) -> 'Vector':
+        magnitude = self.get_magnitude()
+        if magnitude == 0: return Vector(0, 0, 0)
         return Vector(
-            (self.x / self.get_magnitude()),
-            (self.y / self.get_magnitude()),
-            (self.z / self.get_magnitude()))
+            (self.x / magnitude),
+            (self.y / magnitude),
+            (self.z / magnitude))
 
     @staticmethod
-    def cross_product(v1, v2):
+    def cross_product(v1: 'Vector', v2: 'Vector') -> 'Vector':
         cp_vector = Vector(v1.y * v2.z - v1.z * v2.y,
                            v1.z * v2.x - v1.x * v2.z,
                            v1.x * v2.y - v1.y * v2.x)
@@ -112,14 +114,14 @@ class Vector(object):
         return cp_vector
 
     @staticmethod
-    def dot_product(v1, v2):
+    def dot_product(v1: 'Vector', v2: 'Vector') -> float:
         d = (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z)
         logging.debug(f"d : {d}")
         return d
 
 
 class Modeler(object):
-    def __init__(self, size_x, size_y, steps_x, steps_y, model_points):
+    def __init__(self, size_x: float, size_y: float, steps_x: int, steps_y: int, model_points: List[List[ModelPoint]]):
         """
         :param size_x: The size of the model along the x-axis (unitless but usually mm for 3d printing)
         :param size_y: The size of the model along the y-axis (unitless but usually mm for 3d printing)
@@ -131,9 +133,9 @@ class Modeler(object):
         """""
         self.model_points = model_points
 
-        self.triangles = None
-        self.faces = None
-        self.mesh = None
+        self.triangles: Optional[List[List[Triangle]]] = None
+        self.faces: Optional[List[Tuple[List[float], List[List[float]], List[float]]]] = None
+        self.mesh: Optional[Mesh] = None
 
         self.size_x = size_x
         self.size_y = size_y
@@ -145,7 +147,7 @@ class Modeler(object):
         self.y_step_size = size_y / steps_y
         logging.debug(f"y_step_size: {self.y_step_size}")
 
-    def get_model_x_y_for_steps(self, x_step, y_step):
+    def get_model_x_y_for_steps(self, x_step: int, y_step: int) -> Tuple[float, float]:
         """
         :param x_step: The step along the x-axis
         :param y_step: The step along the y-axis
@@ -156,7 +158,7 @@ class Modeler(object):
         return x, y
 
     @staticmethod
-    def get_model_x_y_for_steps(size_x, size_y, x_step, y_step, steps_x, steps_y):
+    def get_model_x_y_for_steps(size_x: float, size_y: float, x_step: int, y_step: int, steps_x: int, steps_y: int) -> Tuple[float, float]:
         """
         :param size_x: The size of the model along the x-axis
         :param size_y: The size of the model along the y-axis
@@ -172,7 +174,7 @@ class Modeler(object):
         y = round((y_step * size_y / steps_y), 3)
         return x, y
 
-    def generate_triangles(self, max_processes=1):
+    def generate_triangles(self, max_processes: int = 1) -> None:
         """
         :param max_processes: The maximum number of processes to use for triangle generation
         :return: None
@@ -180,7 +182,7 @@ class Modeler(object):
         with Pool(max_processes) as p:
             self.triangles = p.map(self._generate_triangles_for_, range(-1, self.steps_x))
 
-    def save_stl(self, filename):
+    def save_stl(self, filename: str) -> None:
         """
         :param filename: The filename to save the STL file to
         :return: None
@@ -189,7 +191,7 @@ class Modeler(object):
             self.generate_mesh()
         self.mesh.save(filename)
 
-    def _generate_triangles_for_(self, index):
+    def _generate_triangles_for_(self, index: int) -> List[Triangle]:
         """
         :param index: The index of the strip along the x-axis
         :return: A list of Triangle objects representing the triangles for the strip
@@ -201,7 +203,7 @@ class Modeler(object):
         else:
             return self._generate_triangles_for_top_and_bottom_strip_x(index)
 
-    def _generate_triangles_for_top_and_bottom_strip_x(self, x_step):
+    def _generate_triangles_for_top_and_bottom_strip_x(self, x_step: int) -> List[Triangle]:
         """
         This method generates the triangles for a single strip of the model along the x-axis.
         It creates two triangles for each square in the top strip and two triangles for each
@@ -285,7 +287,7 @@ class Modeler(object):
         logging.debug(f"Ending Triangles for x_step: {x_step}")
         return triangles
 
-    def _generate_triangles_for_front_and_rear(self):
+    def _generate_triangles_for_front_and_rear(self) -> List[Triangle]:
         """
         :return: A list of Triangle objects representing the triangles for the front and rear of the model.
         """
@@ -317,15 +319,15 @@ class Modeler(object):
                 triangle_rear_2 = Triangle(self.model_points[x_step][self.steps_y],
                                            self.model_points[x_step + 1][self.steps_y].get_floor_copy(),
                                            self.model_points[x_step + 1][self.steps_y])
-                logging.debug(f"triangle_front_2: {triangle_rear_2}")
+                logging.debug(f"triangle_rear_2: {triangle_rear_2}")
                 triangles.append(triangle_rear_2)
         return triangles
 
-    def _generate_triangles_for_left_and_right(self):
+    def _generate_triangles_for_left_and_right(self) -> List[Triangle]:
         """
         :return: A list of Triangle objects representing the triangles for the left and right of the model.
         """
-        logging.debug(f"Adding Front and Rear Triangles.")
+        logging.debug(f"Adding Left and Right Triangles.")
         triangles = []
         for y_step in range(0, self.steps_y):
             if not self.model_points[self.steps_x][y_step].z == 0:
@@ -339,37 +341,37 @@ class Modeler(object):
                 triangle_right_2 = Triangle(self.model_points[self.steps_x][y_step],
                                             self.model_points[self.steps_x][y_step + 1],
                                             self.model_points[self.steps_x][y_step + 1].get_floor_copy())
-                logging.debug(f"triangle_front_2: {triangle_right_2}")
+                logging.debug(f"triangle_right_2: {triangle_right_2}")
                 triangles.append(triangle_right_2)
 
             if not self.model_points[0][y_step].z == 0:
                 triangle_left_1 = Triangle(self.model_points[0][y_step],
                                            self.model_points[0][y_step].get_floor_copy(),
                                            self.model_points[0][y_step + 1].get_floor_copy())
-                logging.debug(f"triangle_rear_1: {triangle_left_1}")
+                logging.debug(f"triangle_left_1: {triangle_left_1}")
                 triangles.append(triangle_left_1)
 
             if not self.model_points[0][y_step].z == 0:
                 triangle_left_2 = Triangle(self.model_points[0][y_step],
                                            self.model_points[0][y_step + 1].get_floor_copy(),
                                            self.model_points[0][y_step + 1])
-                logging.debug(f"triangle_front_2: {triangle_left_2}")
+                logging.debug(f"triangle_left_2: {triangle_left_2}")
                 triangles.append(triangle_left_2)
         return triangles
 
-    def generate_faces(self, max_processes=1):
+    def generate_faces(self, max_processes: int = 1) -> None:
         """
         :param max_processes: The maximum number of processes to use for face generation
         :return: None
         """
-        logging.info(f"Generating faces")
+        logging.debug(f"Generating faces")
         with Pool(max_processes) as p:
             faces_groups = p.map(self._generate_faces, self.triangles)
         self.faces = []
         for faces in faces_groups:
             self.faces.extend(faces)
 
-    def _generate_faces(self, triangles):
+    def _generate_faces(self, triangles: List[Triangle]) -> List[Tuple[List[float], List[List[float]], List[float]]]:
         """
         :param triangles: A list of Triangle objects
         :return: A list of Face objects representing the faces of the triangles
@@ -381,12 +383,12 @@ class Modeler(object):
                 faces.append(face)
         return faces
 
-    def generate_mesh(self):
+    def generate_mesh(self) -> None:
         """
         :return: None
         """
-        if len(self.faces) == 0:
+        if self.faces is None or len(self.faces) == 0:
             self.generate_faces()
-        logging.info(f"Meshing.")
+        logging.debug(f"Meshing.")
         array = nparray(self.faces, dtype=Mesh.dtype)
         self.mesh = Mesh(array)

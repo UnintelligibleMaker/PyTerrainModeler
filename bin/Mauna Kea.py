@@ -14,9 +14,7 @@
 import logging
 from argparse import ArgumentParser
 import os
-import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
@@ -55,7 +53,7 @@ if __name__ == '__main__':
                                                                       offset_elevation=-50,  # Push the bottom of the model to -50m elevation
                                                                       min_allowed_z=0.22,  # Push the sea level back up to sea level by trial an error.
                                                                       # TODO add min_allowed_elevation
-                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "..", "MapZen"))
+                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "MapZen"))
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")
     terrain_modeler.save_stl(filename=stl_file_name)

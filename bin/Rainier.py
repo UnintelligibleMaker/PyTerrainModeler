@@ -14,9 +14,7 @@
 import logging
 from argparse import ArgumentParser
 import os
-import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
@@ -48,7 +46,7 @@ if __name__ == '__main__':
                                                                       steps_y=x_y_steps,  # 1000 steps (1000 steps or 0.2 mm resolution on full size)
                                                                       scale_z=1.25,  # Make z features 1.25x the scale as x/y, make it 25% taller because it looks better!
                                                                       offset_elevation=400,  # If 0 is sea level, the whole base gets kinda tall.  I want to push that down soo the base is not as tall.
-                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "..", "MapZen"))
+                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "MapZen"))
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")
     terrain_modeler.save_stl(filename=stl_file_name)

@@ -3,4 +3,7 @@ MapZen
 MapZen_copy
 terrain.stl
 pyterrainmodeler/__pycache__
+*.egg-info/
+dist/
+build/
 
