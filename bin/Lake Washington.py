@@ -23,8 +23,8 @@ import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("-d", "--debug", action="store_true", help="TUrn on debug logging")
-    parser.add_argument("-n", "--draft", action="store_true", help="TUrn on lower-res draft logging")
+    parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug logging")
+    parser.add_argument("-n", "--draft", action="store_true", help="Turn on lower-res draft logging")
     args = parser.parse_args()
     if args.debug:
         logLevel = logging.DEBUG
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     logFormat = '%(asctime)s - %(filename)s.%(lineno)s - %(levelname)s -  %(process)d: %(message)s'
     logging.basicConfig(format=logFormat, level=logLevel)
     logging.debug(f"Args: {args}")
-    xyz_folder = os.path.join(os.getcwd(), "example_xyz_files")
+    xyz_folder = os.path.join(os.getcwd(), "..", "example_xyz_files")
 
     # XYZ files from NOAA and others are is DEPTH, not elevation.
     # So you need to provide that for each file.
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         flatten_reference_elevation_meters=4.9,
         flatten_factor=1,
         flatten_mode=pyterrainmodeler.terrain_modeler.FlattenMode.POSITIVE,
-        geotiff_folder=os.path.join(os.getcwd(), "MapZen"),
+        hgt_gz_folder=os.path.join(os.getcwd(), "..", "MapZen"),
         xyz_config=xyz_config,  # Comment this line out to skip the xyz files and see both the
         # difference in model and processing time.
     )

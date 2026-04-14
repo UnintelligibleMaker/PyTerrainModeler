@@ -45,7 +45,7 @@ if __name__ == '__main__':
     logging.info(f"Initializing Class")
     terrain_modeler = pyterrainmodeler.terrain_modeler.TerrainModeler(latitude=18.700,  # Deg N/S for the SW corner
                                                                       longitude=-156.20,  # Deg W/E for the SW corner
-                                                                      longitude_size=(156.20 - 154.50),  # SE corner longitude - SW corner longitude
+                                                                      longitude_size=(-154.50 - (-156.20)),  # SE corner longitude - SW corner longitude
                                                                       size_x=size_x,  # 200 mm model, as my printer is 250x250 max
                                                                       size_y=size_y,  # 200 mm model, as my printer is 250x250 max
                                                                       steps_x=x_steps,  # 1 mm resolution Draft, 0.2 mm resolution Final
@@ -55,7 +55,7 @@ if __name__ == '__main__':
                                                                       offset_elevation=-50,  # Push the bottom of the model to -50m elevation
                                                                       min_allowed_z=0.22,  # Push the sea level back up to sea level by trial an error.
                                                                       # TODO add min_allowed_elevation
-                                                                      geotiff_folder=os.path.join(os.getcwd(), "MapZen"))
+                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "..", "MapZen"))
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")
     terrain_modeler.save_stl(filename=stl_file_name)

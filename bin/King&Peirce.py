@@ -20,8 +20,8 @@ import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("-d", "--debug", action="store_true", help="TUrn on debug logging")
-    parser.add_argument("-n", "--draft", action="store_true", help="TUrn on lower-res draft logging")
+    parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug logging")
+    parser.add_argument("-n", "--draft", action="store_true", help="Turn on lower-res draft logging")
     args = parser.parse_args()
     if args.debug:
         logLevel = logging.DEBUG
@@ -57,7 +57,7 @@ if __name__ == '__main__':
                                                                       # mode and "play" until it looks good to you.
                                                                       flatten_factor=0.9,  # squish the mountains down a bit.
                                                                       flatten_mode=pyterrainmodeler.terrain_modeler.FlattenMode.POSITIVE,  # Only the mountains not the shipping channel.
-                                                                      geotiff_folder=os.path.join(os.getcwd(), "MapZen"),
+                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "..", "MapZen"),
                                                                       max_processes=(os.cpu_count() * 2))  # Use them processors!
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")

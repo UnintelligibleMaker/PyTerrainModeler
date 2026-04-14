@@ -1,8 +1,8 @@
 """terrain_model.py
     The TerrainModeler class is designed to build real-world terrain models in the STL format,
-    taking geographic coordinates, dimensions, resolution, and various terrain-shaping parameters
+    Taking geographic coordinates, dimensions, resolution, and various terrain-shaping parameters
     as input. It utilizes parallel processing and can handle different input data formats like
-    GeoTIFF and XYZ files.
+    HGT.GZ and XYZ files.
 
     __author__      = "Unintelligible Maker"
     __copyright__   = "Copyright 2024"
@@ -21,6 +21,9 @@ from enum import Enum
 from .elevation_manager import ElevationManager
 from .modeler import Modeler, ModelPoint
 from multiprocessing import Manager, Pool
+
+
+FEET_TO_METERS = 3.28084
 
 
 class FlattenMode(Enum):
@@ -49,11 +52,12 @@ class TerrainModeler:
                  flatten_reference_elevation_meters=0,
                  flatten_factor=1,
                  flatten_mode=None,
-                 geotiff_folder=None,
+                 hgt_gz_folder=None,
                  xyz_config=None,
+                 xyz_units='feet',
                  max_processes=(os.cpu_count() * 2)):
         """
-            This is the terrain model builder.  It builds models of real words terrain in the stl format
+            This is the terrain model builder.  It builds models of real world terrain in the stl format
 
         :param latitude: latitude of the South West of the map
         :param longitude: longitude of the South West of the map
@@ -63,22 +67,20 @@ class TerrainModeler:
         :param steps_x: number of steps in x direction
         :param steps_y: number of steps in y direction
         :param scale_z: factor by which to increase the scale in the z direction.
-        :param offset_elevation: offset of the elevation in the map.  If you map is a long way above sea level or extends below sealevel you might need this
+        :param offset_elevation: offset of the elevation in the map.  If you map is a long way above sea level or extends below sea level you might need this
         :param min_allowed_z: minimum allowed z.  forces z to be a minimum thickness.
-        :param flatten_reference_elevation_meters: flatten reference elevation in meters For the exponential squich you need a referance elevation.
-                Usually sealeve or the "floor" or the map but it doesn't have to be.  This is the elevation that's slightly exagerated
-        :param flatten_factor: flatten factor Te logrythmic factor to flatten by.  0.7 - 0.98 ish
-        :param flatten_mode: flatten mode - Can be None, FlattenMode.POSITIVE (above the referance), FlattenMode.NEGATIVE (below the referance) or FlattenMode.BOTH.
-        :param geotiff_folder: geotiff folder The folder where the geotiffs are stored.  See README.
+        :param flatten_reference_elevation_meters: flatten reference elevation in meters For the exponential squich you need a reference elevation.
+                Usually sea level or the "floor" or the map but it doesn't have to be.  This is the elevation that's slightly exaggerated
+        :param flatten_factor: flatten factor The logarithmic factor to flatten by.  0.7 - 0.98 ish
+        :param flatten_mode: flatten mode - Can be None, FlattenMode.POSITIVE (above the reference), FlattenMode.NEGATIVE (below the reference) or FlattenMode.BOTH.
+        :param hgt_gz_folder: hgt_gz folder The folder where the hgt.gz files are stored.  See README.
         :param xyz_config: xyz config = The XYZ Config for NOOA XYZ files.
                 {surface elevation: [file, file, file, ... ],
                  surface elevation: [file, file, file, ... ]
                  ...}
-        :param max_processes: max processes The maxiumim number of processes to have running at a time.
+        :param xyz_units: units of the depth in the XYZ files.  Can be 'feet' or 'meters'.
+        :param max_processes: max processes The maximum number of processes to have running at a time.
         """
-        self.longitude_delta = longitude_size / steps_x
-        logging.debug(f"{longitude_size}/{steps_x} = {self.longitude_delta}")
-
         self.longitude_delta = longitude_size / steps_x
         logging.debug(f"{longitude_size}/{steps_x} = {self.longitude_delta}")
 
@@ -114,6 +116,9 @@ class TerrainModeler:
         self.flatten_mode = flatten_mode
         logging.debug(f"flatten_mode: {self.flatten_mode}")
 
+        self.xyz_units = xyz_units
+        logging.debug(f"xyz_units: {self.xyz_units}")
+
         self.x_step_meters = x_meters / steps_x
         logging.debug(f"x_step_meters: {self.x_step_meters}")
 
@@ -133,7 +138,7 @@ class TerrainModeler:
         self.latitude_delta = (map_farpoint.latitude - self.map_origin.latitude) / steps_y
         logging.debug(f"{longitude_size}/{steps_x} = {self.longitude_delta}")
 
-        self.elevation_manager = ElevationManager(geotiff_folder=geotiff_folder,
+        self.elevation_manager = ElevationManager(hgt_gz_folder=hgt_gz_folder,
                                                   resolution=-order_of_magnitude)
         self.z_cache = Manager().dict()
         self.modeler = None
@@ -199,8 +204,10 @@ class TerrainModeler:
                                 latitude = float(latitude)
                                 longitude = float(longitude)
 
-                                # This is always feet? ##TODO Confirm this! Parameterize in config? huh?
-                                depth_meters = float(depth) / 3.28084
+                                # This is either feet or meters.
+                                depth_meters = float(depth)
+                                if self.xyz_units == 'feet':
+                                    depth_meters = float(depth) / FEET_TO_METERS
 
                                 y_guess = math.floor((latitude - self.map_origin.latitude) / self.latitude_delta)
                                 x_guess = math.floor((longitude - self.map_origin.longitude) / self.longitude_delta)

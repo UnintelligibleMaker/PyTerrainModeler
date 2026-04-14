@@ -28,7 +28,6 @@ import logging
 from math import sqrt
 from multiprocessing import Pool
 from numpy import array as nparray
-from numpy.random import normal
 from stl.mesh import Mesh
 
 
@@ -64,11 +63,11 @@ class Triangle(object):
         logging.debug(f"v1: {v1}")
         v2 = Vector(self.a.x - self.c.x, self.a.y - self.c.y, self.a.z - self.c.z)
         logging.debug(f"v2: {v2}")
-        c = Vector.cross_product(v1, v2)
-        logging.debug(f"c: {c} = {c.get_magnitude()}")
-        n = c.get_normalized()
-        logging.debug(f"n: {n} = {n.get_magnitude()}")
-        return n
+        cross_product_vector = Vector.cross_product(v1, v2)
+        logging.debug(f"cross_product_vector: {cross_product_vector} = {cross_product_vector.get_magnitude()}")
+        normal_vector = cross_product_vector.get_normalized()
+        logging.debug(f"normal_vector: {normal_vector} = {normal_vector.get_magnitude()}")
+        return normal_vector
 
     def is_on_floor(self):
         return self.a.is_on_floor() and self.b.is_on_floor() and self.c.is_on_floor()
@@ -106,11 +105,11 @@ class Vector(object):
 
     @staticmethod
     def cross_product(v1, v2):
-        c = Vector(v1.y * v2.z - v1.z * v2.y,
-                   v1.z * v2.x - v1.x * v2.z,
-                   v1.x * v2.y - v1.y * v2.x)
-        logging.debug(f"c: {c}")
-        return c
+        cp_vector = Vector(v1.y * v2.z - v1.z * v2.y,
+                           v1.z * v2.x - v1.x * v2.z,
+                           v1.x * v2.y - v1.y * v2.x)
+        logging.debug(f"cp_vector: {cp_vector}")
+        return cp_vector
 
     @staticmethod
     def dot_product(v1, v2):
@@ -167,6 +166,8 @@ class Modeler(object):
         :param steps_y: The number of steps along the y-axis
         :return: The x and y coordinates of the point at the given step along the x and y axes
         """
+        if steps_x == 0 or steps_y == 0:
+            return 0, 0
         x = round((x_step * size_x / steps_x), 3)
         y = round((y_step * size_y / steps_y), 3)
         return x, y

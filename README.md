@@ -23,24 +23,10 @@ Setup:
   - fetch map data into the new MapZen directory\
     Note: This is ~200GB of data.  It's from MapZen/Open TOPO.  This is their recomended download procdure.  https://www.opentopodata.org/datasets/mapzen/ I used this as it's free.\
     `aws s3 cp --no-sign-request --recursive s3://elevation-tiles-prod/skadi ./`
-* Convert MapZen Data from the hgt files it comes as to the geotiff files PyTerrainModeler reads  
-  * Install GDAL\
-    `sudo apt install gdal-bin`
-  - deflate:\
-    `python3 ../bin/mapzen_hgt_to_geotiff.py --remove`\
-      Note: the `--remove` says to remove the original hgt files as it goes.
-      This is to save space.
-      You can omit this to keep the originals if you prefer. 
-      I deleted them so the script supports it.
-    - That is just a wrapper around:\
-      `gdal_translate -co COMPRESS=DEFLATE -co PREDICTOR=2 {hgt_filename} {tif_filename}`\
-      It does all the files and removes the originals, but this is all it does.
 
 * Install Dependencies:
   - GeoPy\
     `pip install geopy`
-  - GeoTiff\
-    `pip install geotiff`
   - numpy-stl\
     `pip install numpy-stl`
 
@@ -81,11 +67,12 @@ Setup:
     - flatten_reference_elevation_meters: flatten reference elevation in meters
     - flatten_factor: flatten factor to logarithmically flatten by.  0.6 - 0.98 usually.
     - flatten_mode: flatten mode - Can be None, FlattenMode.POSITIVE (above the reference), FlattenMode.NEGATIVE (below the reference) or FlattenMode.BOTH.
-  - geotiff_folder: geotiff folder The folder where the geotiffs are stored.  See above for how to get these.  The script will only open the ones needed so you can try to only have the ones you need...but I just keep the whole cache on my drive.
+  - hgt_gz_folder: hgt_gz folder The folder where the hgt.gz files are stored.  See above for how to get these.  The script will only open the ones needed so you can try to only have the ones you need...but I just keep the whole cache on my drive.
   - xyz_config: xyz config = The XYZ Config for NOAA XYZ files.
                 {surface elevation: [file, file, file, ... ],
                  surface elevation: [file, file, file, ... ]
                  ...}
+  - xyz_units: units of the depth in the XYZ files. Can be 'feet' or 'meters'. Default is 'feet'.
   - max_processes: The maximum number of processes to have running at a time.
     In most cases the default `os.cpu_count() * 2` is good.
     Fair warning `1` is mostly for debug, so it forces some things to not be parallelized.

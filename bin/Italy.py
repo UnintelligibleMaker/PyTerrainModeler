@@ -62,7 +62,7 @@ if __name__ == '__main__':
                                                                       # I moved this until it did.
                                                                       flatten_factor=0.9,  # squish the mountains down a bit.
                                                                       flatten_mode=pyterrainmodeler.terrain_modeler.FlattenMode.POSITIVE,
-                                                                      geotiff_folder=os.path.join(os.getcwd(), "MapZen"))
+                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "..", "MapZen"))
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")
     terrain_modeler.save_stl(filename=stl_file_name)

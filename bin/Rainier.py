@@ -1,9 +1,7 @@
 """Rainier.py
 
     This is an example of using the TerrainModeler class to generate a model of
-    Lake Washington in Washington state.  The "cool" this able this is I use NOAA
-    bathymetric .data to remove the water from the lake.  My intention here is to print the lake bed blue...to show depth
-    but I'm not that far along in the project.  It's kina cool to see and maybe someone else will have a use for it too.
+    Mount Rainier in Washington state.
     __author__      = "Unintelligible Maker"
     __copyright__   = "Copyright 2024"
     __license__     = "MIT License"
@@ -23,8 +21,8 @@ import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("-d", "--debug", action="store_true", help="TUrn on debug logging")
-    parser.add_argument("-n", "--draft", action="store_true", help="TUrn on lower-res draft logging")
+    parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug logging")
+    parser.add_argument("-n", "--draft", action="store_true", help="Turn on lower-res draft logging")
     args = parser.parse_args()
     if args.debug:
         logLevel = logging.DEBUG
@@ -50,7 +48,7 @@ if __name__ == '__main__':
                                                                       steps_y=x_y_steps,  # 1000 steps (1000 steps or 0.2 mm resolution on full size)
                                                                       scale_z=1.25,  # Make z features 1.25x the scale as x/y, make it 25% taller because it looks better!
                                                                       offset_elevation=400,  # If 0 is sea level, the whole base gets kinda tall.  I want to push that down soo the base is not as tall.
-                                                                      geotiff_folder=os.path.join(os.getcwd(), "MapZen"))
+                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "..", "MapZen"))
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")
     terrain_modeler.save_stl(filename=stl_file_name)

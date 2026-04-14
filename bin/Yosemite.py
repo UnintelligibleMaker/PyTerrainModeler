@@ -21,8 +21,8 @@ import pyterrainmodeler.terrain_modeler
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("-d", "--debug", action="store_true", help="TUrn on debug logging")
-    parser.add_argument("-n", "--draft", action="store_true", help="TUrn on lower-res draft logging")
+    parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug logging")
+    parser.add_argument("-n", "--draft", action="store_true", help="Turn on lower-res draft logging")
     args = parser.parse_args()
     if args.debug:
         logLevel = logging.DEBUG
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                                                                       steps_x=x_steps,  # 200 steps (1 mm resolution draft)
                                                                       steps_y=y_steps,  # 1000 steps (0.2 mm resolution on Final)
                                                                       offset_elevation=1000,  # If 0 is sea level, the whole base gets kinda tall.  I want to push that down soo the base is not as tall.
-                                                                      geotiff_folder=os.path.join(os.getcwd(), "MapZen"))
+                                                                      hgt_gz_folder=os.path.join(os.getcwd(), "..", "MapZen"))
     logging.info(f"Saving STL")
     stl_file_name = os.path.join(os.getcwd(), "terrain.stl")
     terrain_modeler.save_stl(filename=stl_file_name)
