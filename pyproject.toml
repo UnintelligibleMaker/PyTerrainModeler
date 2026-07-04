@@ -20,6 +20,8 @@ dependencies = [
     "geopy",
     "numpy-stl",
     "numpy",
+    "rasterio",
+    "pyproj",
 ]
 
 [project.urls]

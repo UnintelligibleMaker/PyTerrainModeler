@@ -54,6 +54,8 @@ class TerrainModeler:
                  flatten_factor: float = 1,
                  flatten_mode: Optional[FlattenMode] = None,
                  hgt_gz_folder: Optional[str] = None,
+                 geotiff_override: Optional[str] = None,
+                 geotiff_units: str = 'meters',
                  xyz_config: Optional[Dict[float, List[str]]] = None,
                  xyz_units: str = 'feet',
                  max_processes: int = (os.cpu_count() * 2)):
@@ -75,6 +77,9 @@ class TerrainModeler:
         :param flatten_factor: flatten factor The logarithmic factor to flatten by.  0.7 - 0.98 ish
         :param flatten_mode: flatten mode - Can be None, FlattenMode.POSITIVE (above the reference), FlattenMode.NEGATIVE (below the reference) or FlattenMode.BOTH.
         :param hgt_gz_folder: hgt_gz folder The folder where the hgt.gz files are stored.  See README.
+        :param geotiff_override: Optional path to a single GeoTIFF used as the primary elevation source.
+                Points inside the raster with valid data are taken from the GeoTIFF; everything else falls back to hgt.gz.
+        :param geotiff_units: Vertical units of the GeoTIFF's pixel values.  'meters' (default) or 'feet'.
         :param xyz_config: xyz config = The XYZ Config for NOOA XYZ files.
                 {surface elevation: [file, file, file, ... ],
                  surface elevation: [file, file, file, ... ]
@@ -85,7 +90,7 @@ class TerrainModeler:
         self.longitude_delta: float = longitude_size / steps_x
         logging.debug(f"{longitude_size}/{steps_x} = {self.longitude_delta}")
 
-        order_of_magnitude: int = -4  # math.floor(math.log(longitude_delta, 10))
+        order_of_magnitude: int = 10  # math.floor(math.log(longitude_delta, 10))
         logging.debug(f"Order Of Magnitude: {order_of_magnitude}")
 
         self.steps_x: int = steps_x
@@ -140,7 +145,9 @@ class TerrainModeler:
         logging.debug(f"{longitude_size}/{steps_x} = {self.longitude_delta}")
 
         self.elevation_manager: ElevationManager = ElevationManager(hgt_gz_folder=hgt_gz_folder,
-                                                                    resolution=-order_of_magnitude)
+                                                                    geotiff_override=geotiff_override,
+                                                                    geotiff_units=geotiff_units,
+                                                                    resolution=order_of_magnitude)
         self.z_cache: Dict[float, float] = Manager().dict()  # type: ignore
         self.modeler: Optional[Modeler] = None
 

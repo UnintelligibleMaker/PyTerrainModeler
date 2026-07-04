@@ -16,18 +16,26 @@ import logging
 import os
 import math
 import gzip
-from typing import Optional, Dict, Tuple
+from typing import Any, Optional, Dict, Tuple
 from numpy import array as nparray, frombuffer, ndarray
 from multiprocessing import Manager
+
+
+FEET_TO_METERS: float = 0.3048
 
 
 class ElevationManager(object):
 
     def __init__(self,
                  hgt_gz_folder: Optional[str] = None,
-                 resolution: int = 4):
+                 geotiff_override: Optional[str] = None,
+                 geotiff_units: str = 'meters',
+                 resolution: int = 10):
         """
         :param hgt_gz_folder: The folder where the hgt.gz files are stored
+        :param geotiff_override: Optional path to a single GeoTIFF used as the primary elevation source.
+                Points inside the raster with valid data are taken from the GeoTIFF; everything else falls back to hgt.gz.
+        :param geotiff_units: Vertical units of the GeoTIFF's pixel values.  'meters' (default) or 'feet'.
         :param resolution: The resolution (10 ^ -n) of the elevation data.
              Default is 4 or 0.0001 deg of lat/long which is like 10m or less
                         5 is 0.00001 deg of lat/long which is like 1m or less
@@ -35,11 +43,14 @@ class ElevationManager(object):
                         This is all probably more than the elevation data itself.
         """
         self.hgt_gz_folder: Optional[str] = hgt_gz_folder
-        self.resolution: int = max(resolution, 4)
+        self.geotiff_override: Optional[str] = geotiff_override
+        self.geotiff_units: str = geotiff_units
+        self.resolution: int = max(resolution, 10)
 
         self.elevation_cache: Dict[str, float] = Manager().dict()
 
         self.open_files: Dict[str, Tuple[int, ndarray]] = {}
+        self.open_geotiff: Dict[str, Tuple[Any, Any, ndarray, Optional[float], int, int]] = {}
 
     def _increment_by_resolution(self, initial_value: float) -> float:
         """
@@ -82,7 +93,10 @@ class ElevationManager(object):
             return self.elevation_cache[elevation_cache_key]
 
         elevation = None
-        if self.hgt_gz_folder:
+        if self.geotiff_override:
+            elevation = self._get_elevation_from_geotiff(latitude=rounded_latitude, longitude=rounded_longitude)
+
+        if elevation is None and self.hgt_gz_folder:
             elevation = self._get_elevation_from_hgt_gz(latitude=rounded_latitude, longitude=rounded_longitude)
 
         if elevation is not None:
@@ -90,6 +104,52 @@ class ElevationManager(object):
             return self.elevation_cache[elevation_cache_key]
 
         raise ValueError("Could not find a value for the elevation")
+
+    def _get_elevation_from_geotiff(self, latitude: float, longitude: float) -> Optional[float]:
+        """
+        :param latitude: The latitude to get the elevation for
+        :param longitude: The longitude to get the elevation for
+        :return: The elevation at the given latitude and longitude from the override GeoTIFF,
+                 or None if the point is outside the raster bounds or the pixel is NoData.
+        """
+        if self.geotiff_override not in self.open_geotiff:
+            import rasterio
+            from pyproj import Transformer
+            logging.info(f"Loading GeoTIFF override {self.geotiff_override}")
+            with rasterio.open(self.geotiff_override) as dataset:
+                if dataset.crs is None:
+                    raise ValueError(f"GeoTIFF {self.geotiff_override} has no CRS; cannot transform lat/lon to its grid.")
+                transformer = Transformer.from_crs("EPSG:4326", dataset.crs, always_xy=True)
+                affine = dataset.transform
+                array = dataset.read(1)
+                nodata = dataset.nodata
+                height, width = array.shape
+            self.open_geotiff[self.geotiff_override] = (transformer, affine, array, nodata, width, height)
+
+        transformer, affine, array, nodata, width, height = self.open_geotiff[self.geotiff_override]
+
+        x, y = transformer.transform(longitude, latitude)
+        col_f, row_f = ~affine * (x, y)
+        col, row = int(col_f), int(row_f)
+
+        if not (0 <= col < width and 0 <= row < height):
+            logging.debug(f"GeoTIFF Miss (out of bounds): ({latitude},{longitude})")
+            return None
+
+        value = float(array[row, col])
+
+        if value != value:  # NaN
+            logging.debug(f"GeoTIFF Miss (NaN): ({latitude},{longitude})")
+            return None
+        if nodata is not None and value == float(nodata):
+            logging.debug(f"GeoTIFF Miss (NoData): ({latitude},{longitude})")
+            return None
+
+        if self.geotiff_units == 'feet':
+            value = value * FEET_TO_METERS
+
+        logging.debug(f"GeoTIFF Hit: ({latitude},{longitude}) = {value}m")
+        return value
 
     def _get_elevation_from_hgt_gz(self, latitude: float, longitude: float) -> Optional[float]:
         """
